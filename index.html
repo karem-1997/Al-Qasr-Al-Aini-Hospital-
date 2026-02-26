@@ -3,121 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستشفى القصر الفرنسي - نظام الأيقونات الذكي</title>
+    <title>منصة القصر الفرنسي - البحث والإدارة</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root { --primary: #0284c7; --accent: #38bdf8; --bg: #f0f9ff; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; color: #0f172a; }
+        :root { --primary: #0284c7; --bg: #f0f9ff; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
         
-        /* الهيدر */
-        .header { 
-            text-align: center; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); 
-            padding: 25px 15px; border-radius: 0 0 40px 40px; margin: -15px -15px 25px -15px;
-            color: white; box-shadow: 0 10px 20px rgba(2, 132, 199, 0.2);
+        /* الهيدر والبحث */
+        .top-section { 
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); 
+            padding: 30px 20px; border-radius: 0 0 30px 30px; color: white; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        #pathDisplay { font-size: 12px; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 50px; display: inline-block; margin-top: 10px; }
+        .search-container { margin-top: 15px; position: relative; max-width: 500px; margin-left: auto; margin-right: auto; }
+        #searchInput { 
+            width: 100%; padding: 12px 45px 12px 15px; border-radius: 50px; border: none; 
+            font-size: 15px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .search-icon { position: absolute; right: 15px; top: 10px; color: #94a3b8; font-size: 18px; }
 
-        /* شبكة الأزرار 2 في الصف */
+        /* المحتوى */
+        .container { padding: 20px; }
+        #pathDisplay { font-size: 12px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 15px; border-radius: 20px; display: inline-block; }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .card { 
-            background: white; padding: 25px 10px; border-radius: 25px; text-align: center; 
-            cursor: pointer; box-shadow: 0 8px 0 #e2e8f0, 0 15px 25px rgba(0,0,0,0.05); 
-            transition: 0.1s; border: 1px solid #f1f5f9;
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            background: white; padding: 20px 10px; border-radius: 25px; text-align: center; 
+            cursor: pointer; box-shadow: 0 6px 0 #e2e8f0; transition: 0.1s; border: 1px solid #f1f5f9;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
-        .card:active { transform: translateY(4px); box-shadow: 0 2px 0 #e2e8f0; }
-        .card .icon { font-size: 45px; margin-bottom: 5px; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.1)); }
-        .card span.name { font-weight: 900; color: #1e293b; font-size: 16px; }
+        .card:active { transform: translateY(3px); box-shadow: none; }
+        .card .icon { font-size: 40px; }
+        .card .name { font-weight: bold; color: #1e293b; font-size: 14px; }
 
         /* لوحة التحكم */
-        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 9999; padding: 15px; box-sizing: border-box; overflow-y: auto; }
+        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f5f9; z-index: 9999; padding: 15px; box-sizing: border-box; overflow-y: auto; }
         .admin-box { background: white; padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        h4 { margin: 0 0 12px 0; color: var(--primary); border-right: 4px solid var(--primary); padding-right: 8px; }
         
-        input, select { width: 100%; padding: 14px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 8px; }
         .btn-blue { background: var(--primary); }
         .btn-green { background: #10b981; }
+        .btn-red { background: #ef4444; }
 
-        /* المودال */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 35px; width: 90%; max-width: 400px; text-align: center; }
-        #modalImg { width: 100%; border-radius: 25px; max-height: 200px; object-fit: cover; margin-bottom: 15px; border: 4px solid #f0f9ff; }
+        /* قائمة التعديل والحذف */
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #edf2f7; border-radius: 12px; margin-bottom: 5px; font-size: 13px; }
+        .action-btns { display: flex; gap: 5px; }
+        .small-btn { padding: 5px 10px; border-radius: 8px; font-size: 11px; border: none; color: white; cursor: pointer; }
 
-        .admin-trigger { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; opacity: 0.1; cursor: pointer; z-index: 10001; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 5px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; }
+        
+        .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 40px; height: 40px; opacity: 0.1; cursor: pointer; z-index: 10001; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2 style="margin:0;">مستشفى القصر الفرنسي</h2>
-        <div id="pathDisplay">الرئيسية</div>
+    <div class="top-section">
+        <h2 style="margin:0;">🏥 مستشفى القصر الفرنسي</h2>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="ابحث عن دكتور أو عيادة..." oninput="handleSearch()">
+        </div>
     </div>
 
-    [attachment_0](attachment)
+    
 
-    <div id="mainGrid" class="grid"></div>
+    <div class="container">
+        <div id="pathDisplay">الرئيسية</div>
+        <div id="mainGrid" class="grid"></div>
 
-    <div id="navButtons" style="display:none; margin: 25px 0;">
-        <button class="btn" style="background:#64748b" onclick="goBack()">🔙 العودة للخلف</button>
-        <button class="btn" style="background:#0f172a" onclick="goHome()">🏠 الشاشة الرئيسية</button>
+        <div id="navButtons" style="display:none; margin-top:20px;">
+            <button class="btn" style="background:#64748b" onclick="goBack()">🔙 رجوع</button>
+            <button class="btn" style="background:#0369a1" onclick="goHome()">🏠 الرئيسية</button>
+        </div>
     </div>
 
     <div class="admin-trigger" onclick="openAdmin()">⚙️</div>
 
     <div id="adminPanel">
-        <h2 style="text-align:center">⚙️ إعدادات المنصة</h2>
+        <h2 style="text-align:center">🛠️ لوحة الإدارة الشاملة</h2>
         
         <div class="admin-box">
-            <h4>📦 إنشاء قسم جديد بأيقونة</h4>
-            <select id="catParent"><option value="root">-- في الصفحة الرئيسية --</option></select>
-            <input type="text" id="catName" placeholder="اسم القسم (مثلاً: عيادة الأسنان)">
+            <h4 id="catTitle">📦 إضافة / تعديل قسم</h4>
+            <input type="hidden" id="editCatId">
+            <select id="catParent"><option value="root">-- الصفحة الرئيسية --</option></select>
+            <input type="text" id="catName" placeholder="اسم القسم">
             <select id="catIcon">
-                <option value="🏥">🏥 مستشفى / عام</option>
-                <option value="🦷">🦷 عيادة أسنان</option>
-                <option value="👁️">👁️ عيادة الرمد</option>
-                <option value="👶">👶 عيادة الأطفال</option>
-                <option value="❤️">❤️ عيادة القلب</option>
-                <option value="🦴">🦴 عيادة العظام</option>
-                <option value="🧠">🧠 عيادة المخ والأعصاب</option>
-                <option value="💊">💊 صيدلية</option>
-                <option value="🔬">🔬 معامل تحاليل</option>
-                <option value="🚑">🚑 طوارئ</option>
-                <option value="👨‍⚕️">👨‍⚕️ قسم الأطباء</option>
-                <option value="📂">📂 ملفات أخرى</option>
+                <option value="🏥">🏥 عام</option><option value="🦷">🦷 أسنان</option>
+                <option value="👁️">👁️ رمد</option><option value="👶">👶 أطفال</option>
+                <option value="❤️">❤️ قلب</option><option value="🦴">🦴 عظام</option>
+                <option value="👨‍⚕️">👨‍⚕️ أطباء</option><option value="📂">📂 ملفات</option>
             </select>
-            <button class="btn btn-blue" onclick="saveCategory()">إنشاء القسم الآن ✅</button>
+            <button class="btn btn-blue" id="catBtn" onclick="saveCategory()">حفظ القسم ✅</button>
         </div>
 
         <div class="admin-box">
-            <h4>👤 إضافة دكتور جديد</h4>
+            <h4 id="drTitle">👨‍⚕️ إضافة / تعديل دكتور</h4>
+            <input type="hidden" id="editDrId">
             <select id="drParent"></select>
             <input type="text" id="drName" placeholder="اسم الدكتور">
             <input type="file" id="drFile" accept="image/*">
             <div id="dynamicFields"></div>
-            <button class="btn" style="background:#6366f1; padding:8px;" onclick="addField()">➕ إضافة معلومة (سعر، تخصص..)</button>
-            <input type="text" id="drWa" placeholder="رقم واتساب الحجز">
-            <button class="btn btn-green" onclick="saveDoctor()">حفظ الدكتور ✅</button>
+            <button class="btn" style="background:#6366f1; font-size:12px;" onclick="addField()">➕ إضافة خانة بيانات</button>
+            <input type="text" id="drWa" placeholder="رقم الواتساب">
+            <button class="btn btn-green" id="drBtn" onclick="saveDoctor()">حفظ الدكتور ✅</button>
         </div>
 
         <div class="admin-box">
-            <h4>📋 إدارة وحذف البيانات</h4>
-            <select id="filterSelect" onchange="syncAdminList()"></select>
-            <div id="manageList"></div>
+            <h4>📋 قائمة البحث والتحكم (تعديل/حذف)</h4>
+            <input type="text" id="adminSearch" placeholder="ابحث هنا لتعديل أي شيء..." oninput="syncAdminList()">
+            <div id="manageList" style="margin-top:10px;"></div>
         </div>
 
-        <button class="btn" style="background:black" onclick="closeAdmin()">إغلاق اللوحة</button>
+        <button class="btn btn-red" onclick="closeAdmin()">إغلاق</button>
     </div>
 
     <div id="modal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 id="mTitle" style="color:var(--primary); margin-top:0;"></h2>
-            <img id="modalImg">
-            <div id="mInfo" style="text-align:right; background:#f8fafc; padding:20px; border-radius:20px; margin-bottom:15px; border:1px solid #e2e8f0;"></div>
-            <a id="mWa" class="btn btn-green" style="text-decoration:none; display:block" target="_blank">💬 حجز موعد الآن</a>
+            <h2 id="mTitle"></h2>
+            <img id="modalImg" style="width:100%; border-radius:15px; margin-bottom:15px; display:none;">
+            <div id="mInfo" style="text-align:right; background:#f8fafc; padding:15px; border-radius:15px; margin-bottom:15px; font-size:14px;"></div>
+            <a id="mWa" class="btn btn-green" target="_blank">💬 حجز واتساب</a>
             <button class="btn" style="background:none; color:#64748b" onclick="document.getElementById('modal').style.display='none'">إغلاق</button>
         </div>
     </div>
@@ -133,128 +144,155 @@
         let dataStore = { cats: {}, drs: {} };
         let currentPath = ['root'];
 
-        db.ref('icon_system_v4').on('value', (s) => {
+        db.ref('final_v5').on('value', (s) => {
             dataStore = s.val() || { cats: {}, drs: {} };
             render();
             syncAdminUI();
         });
 
-        // --- العرض ---
+        // --- محرك البحث في الصفحة الرئيسية ---
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const grid = document.getElementById('mainGrid');
+            if(!query) { render(); return; }
+
+            grid.innerHTML = '';
+            // بحث في الأقسام
+            Object.values(dataStore.cats || {}).forEach(c => {
+                if(c.name.toLowerCase().includes(query)) {
+                    createCard(grid, c.icon || '📂', c.name, () => { currentPath.push(c.name); render(); document.getElementById('searchInput').value=''; });
+                }
+            });
+            // بحث في الدكاترة
+            Object.values(dataStore.drs || {}).forEach(d => {
+                if(d.name.toLowerCase().includes(query)) {
+                    createCard(grid, '👨‍⚕️', d.name, () => showDr(d));
+                }
+            });
+        }
+
+        function createCard(container, icon, name, clickFn) {
+            const d = document.createElement('div');
+            d.className = 'card';
+            d.innerHTML = `<div class="icon">${icon}</div><div class="name">${name}</div>`;
+            d.onclick = clickFn;
+            container.appendChild(d);
+        }
+
         function render() {
             const grid = document.getElementById('mainGrid');
             const parent = currentPath[currentPath.length - 1];
             grid.innerHTML = '';
-            
             document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
             document.getElementById('navButtons').style.display = currentPath.length > 1 ? 'block' : 'none';
 
-            // عرض الأقسام بأيقوناتها
-            if(dataStore.cats) {
-                Object.values(dataStore.cats).forEach(c => {
-                    if(c.parent === parent) {
-                        const d = document.createElement('div');
-                        d.className = 'card';
-                        d.innerHTML = `<div class="icon">${c.icon || '📂'}</div><span class="name">${c.name}</span>`;
-                        d.onclick = () => { currentPath.push(c.name); render(); };
-                        grid.appendChild(d);
-                    }
-                });
-            }
-
-            // عرض الدكاترة
-            if(dataStore.drs) {
-                Object.values(dataStore.drs).forEach(dr => {
-                    if(dr.parent === parent) {
-                        const d = document.createElement('div');
-                        d.className = 'card';
-                        d.style.border = '2px solid #bae6fd';
-                        d.innerHTML = `<div class="icon">👨‍⚕️</div><span class="name">${dr.name}</span>`;
-                        d.onclick = () => showDr(dr);
-                        grid.appendChild(d);
-                    }
-                });
-            }
+            if(dataStore.cats) Object.values(dataStore.cats).forEach(c => {
+                if(c.parent === parent) createCard(grid, c.icon || '📂', c.name, () => { currentPath.push(c.name); render(); });
+            });
+            if(dataStore.drs) Object.values(dataStore.drs).forEach(dr => {
+                if(dr.parent === parent) createCard(grid, '👨‍⚕️', dr.name, () => showDr(dr));
+            });
         }
 
-        [attachment_1](attachment)
+        
 
         function goBack() { currentPath.pop(); render(); }
         function goHome() { currentPath = ['root']; render(); }
 
-        // --- الإدارة ---
+        // --- لوحة التحكم (إضافة، تعديل، حذف) ---
         function saveCategory() {
             const name = document.getElementById('catName').value;
             const parent = document.getElementById('catParent').value;
             const icon = document.getElementById('catIcon').value;
+            const id = document.getElementById('editCatId').value;
             if(!name) return;
-            db.ref('icon_system_v4/cats').push({ name, parent, icon });
-            document.getElementById('catName').value = '';
+            if(id) db.ref('final_v5/cats/'+id).update({name, parent, icon});
+            else db.ref('final_v5/cats').push({name, parent, icon});
+            resetCatForm();
         }
 
         async function saveDoctor() {
             const name = document.getElementById('drName').value;
             const parent = document.getElementById('drParent').value;
+            const id = document.getElementById('editDrId').value;
             const file = document.getElementById('drFile').files[0];
             let img = "";
             if(file) img = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
-
+            
             const fields = [];
             document.querySelectorAll('.f-row').forEach(row => {
                 fields.push({ label: row.querySelector('.f-l').value, value: row.querySelector('.f-v').value });
             });
 
-            db.ref('icon_system_v4/drs').push({ name, parent, img, fields, wa: document.getElementById('drWa').value });
-            alert("تم حفظ الدكتور!");
-            document.getElementById('drName').value = '';
-            document.getElementById('dynamicFields').innerHTML = '';
-        }
+            const data = { name, parent, fields, wa: document.getElementById('drWa').value };
+            if(img) data.img = img;
 
-        function addField() {
-            const div = document.createElement('div');
-            div.className = 'f-row';
-            div.style = "display:flex; gap:5px; margin-bottom:5px;";
-            div.innerHTML = `<input type="text" placeholder="البيان" class="f-l"> <input type="text" placeholder="التفاصيل" class="f-v">`;
-            document.getElementById('dynamicFields').appendChild(div);
+            if(id) db.ref('final_v5/drs/'+id).update(data);
+            else db.ref('final_v5/drs').push(data);
+            resetDrForm();
         }
 
         function syncAdminUI() {
-            const cp = document.getElementById('catParent');
-            const dp = document.getElementById('drParent');
-            const filter = document.getElementById('filterSelect');
+            const cp = document.getElementById('catParent'), dp = document.getElementById('drParent');
             let opts = '<option value="root">-- الرئيسية --</option>';
             if(dataStore.cats) Object.values(dataStore.cats).forEach(c => opts += `<option value="${c.name}">${c.name}</option>`);
             cp.innerHTML = opts; dp.innerHTML = opts;
-            filter.innerHTML = '<option value="">-- اختر القسم للإدارة --</option>' + opts;
             syncAdminList();
         }
 
         function syncAdminList() {
-            const list = document.getElementById('manageList');
-            const filter = document.getElementById('filterSelect').value;
-            if(!filter) return list.innerHTML = '';
+            const list = document.getElementById('manageList'), q = document.getElementById('adminSearch').value.toLowerCase();
             list.innerHTML = '';
             if(dataStore.cats) Object.entries(dataStore.cats).forEach(([id, c]) => {
-                if(c.parent === filter) list.innerHTML += `<div class="item-row"><span>${c.icon} ${c.name}</span> <button onclick="del('cats','${id}')" style="color:red; border:none; background:none;">حذف</button></div>`;
+                if(c.name.toLowerCase().includes(q)) list.innerHTML += `<div class="item-row"><span>📂 ${c.name}</span> <div class="action-btns"><button class="small-btn" style="background:#f59e0b" onclick="editCat('${id}')">تعديل</button><button class="small-btn" style="background:#ef4444" onclick="del('cats','${id}')">حذف</button></div></div>`;
             });
             if(dataStore.drs) Object.entries(dataStore.drs).forEach(([id, d]) => {
-                if(d.parent === filter) list.innerHTML += `<div class="item-row"><span>👨‍⚕️ ${d.name}</span> <button onclick="del('drs','${id}')" style="color:red; border:none; background:none;">حذف</button></div>`;
+                if(d.name.toLowerCase().includes(q)) list.innerHTML += `<div class="item-row"><span>👨‍⚕️ ${d.name}</span> <div class="action-btns"><button class="small-btn" style="background:#f59e0b" onclick="editDr('${id}')">تعديل</button><button class="small-btn" style="background:#ef4444" onclick="del('drs','${id}')">حذف</button></div></div>`;
             });
         }
 
-        function del(t, id) { if(confirm("حذف؟")) db.ref(`icon_system_v4/${t}/${id}`).remove(); }
+        function editCat(id) {
+            const c = dataStore.cats[id];
+            document.getElementById('editCatId').value = id;
+            document.getElementById('catName').value = c.name;
+            document.getElementById('catParent').value = c.parent;
+            document.getElementById('catIcon').value = c.icon;
+            document.getElementById('catBtn').innerText = "تحديث القسم 🔄";
+            document.getElementById('adminPanel').scrollTo(0,0);
+        }
+
+        function editDr(id) {
+            const d = dataStore.drs[id];
+            document.getElementById('editDrId').value = id;
+            document.getElementById('drName').value = d.name;
+            document.getElementById('drParent').value = d.parent;
+            document.getElementById('drWa').value = d.wa;
+            document.getElementById('dynamicFields').innerHTML = '';
+            if(d.fields) d.fields.forEach(f => addField(f.label, f.value));
+            document.getElementById('drBtn').innerText = "تحديث الدكتور 🔄";
+            document.getElementById('adminPanel').scrollTo(0,0);
+        }
+
+        function del(t, id) { if(confirm("حذف نهائي؟")) db.ref(`final_v5/${t}/${id}`).remove(); }
+        function addField(l='', v='') {
+            const div = document.createElement('div'); div.className = 'f-row'; div.style = "display:flex; gap:5px; margin-bottom:5px;";
+            div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}">`;
+            document.getElementById('dynamicFields').appendChild(div);
+        }
 
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name;
             const img = document.getElementById('modalImg');
             if(dr.img) { img.src = dr.img; img.style.display = 'block'; } else { img.style.display = 'none'; }
-            let info = "";
-            if(dr.fields) dr.fields.forEach(f => info += `<p><b>${f.label}:</b> ${f.value}</p>`);
+            let info = ""; if(dr.fields) dr.fields.forEach(f => info += `<p><b>${f.label}:</b> ${f.value}</p>`);
             document.getElementById('mInfo').innerHTML = info;
             document.getElementById('mWa').href = `https://wa.me/20${dr.wa}`;
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function openAdmin() { if(prompt("كلمة السر:") === "1987") document.getElementById('adminPanel').style.display='block'; }
+        function resetCatForm() { document.getElementById('editCatId').value=''; document.getElementById('catName').value=''; document.getElementById('catBtn').innerText="حفظ القسم ✅"; }
+        function resetDrForm() { document.getElementById('editDrId').value=''; document.getElementById('drName').value=''; document.getElementById('dynamicFields').innerHTML=''; document.getElementById('drBtn').innerText="حفظ الدكتور ✅"; }
+        function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display='none'; }
     </script>
 </body>
