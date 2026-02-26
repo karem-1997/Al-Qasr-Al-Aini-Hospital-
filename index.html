@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">استعلامات القصر العيني الفرنسي</title>
+    <title id="pageTitle">نظام استعلامات القصر الفرنسي</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
@@ -16,8 +16,7 @@
         body { 
             font-family: 'Segoe UI', Tahoma, sans-serif; 
             background: var(--bg-gradient); background-attachment: fixed; 
-            margin: 0; padding: 15px; color: #0c4a6e;
-            min-height: 100vh; display: flex; flex-direction: column;
+            margin: 0; padding: 15px; color: #0c4a6e; min-height: 100vh;
         }
 
         .header-area {
@@ -27,127 +26,88 @@
             margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.4);
         }
 
-        /* الشاشة الرئيسية: الأقسام (أطباء، عيادات...) */
-        #mainCategories { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .cat-btn { 
-            background: white; border: none; padding: 25px; border-radius: 20px;
-            font-size: 20px; font-weight: 900; color: #0369a1; cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.2s;
+        /* حاوية الأزرار - نظام 2 في كل صف */
+        .grid-container { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
         }
-        .cat-btn:active { transform: scale(0.98); }
 
-        /* شاشة عرض الأطباء/العيادات داخل القسم */
-        #subPage { display: none; flex-grow: 1; }
-        
-        /* التعديل الجوهري: جعلهم طبيبين بجانب بعض */
-        #buttonsContainer { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; /* هذا السطر يجعلهم 2 في كل صف */
-            gap: 12px; 
-            margin-top: 15px;
-        }
-        
         .main-btn { 
-            background: linear-gradient(to bottom, #ffffff, #e0f2fe);
-            border: 1px solid #bae6fd; padding: 20px 10px; 
-            border-radius: 18px; cursor: pointer; font-weight: 800; 
+            background: white; border: 1px solid #bae6fd; padding: 25px 10px; 
+            border-radius: 20px; cursor: pointer; font-weight: 800; 
             color: #0369a1; box-shadow: 0 5px 0 #38bdf8, 0 8px 12px rgba(0,0,0,0.1);
             transition: 0.1s; font-size: 14px; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .main-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #38bdf8; }
+        .main-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #38bdf8; }
 
-        .back-btn { background: #64748b; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 30px; }
+        .back-nav { margin-top: 25px; }
+        .back-btn { background: #64748b; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; }
 
         /* لوحة التحكم */
-        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 10001; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .admin-section { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: inherit; }
-        .btn-action { padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; border: none; color: white; width: 100%; margin-top: 5px; }
+        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f5f9; z-index: 10001; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .admin-section { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 10px; }
+        .btn-save { background: #10b981; color: white; padding: 12px; border-radius: 10px; width: 100%; border: none; font-weight: bold; cursor: pointer; }
 
-        /* مودال التفاصيل */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; padding: 20px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; max-height: 90vh; overflow-y: auto; }
+        /* المودال */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 20px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; }
         #modalImg { width: 100%; border-radius: 15px; max-height: 200px; object-fit: cover; margin-bottom: 15px; }
-        .info-card { text-align: right; background: #f0f9ff; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; }
         
-        .map-btn { display: block; background: #0ea5e9; color: white; text-decoration: none; padding: 12px; border-radius: 15px; margin: 10px 0; font-weight: bold; }
-        .admin-trigger { position: fixed; bottom: 10px; right: 10px; width: 45px; height: 45px; opacity: 0.05; cursor: pointer; z-index: 9999; }
+        .admin-trigger { position: fixed; bottom: 10px; right: 10px; width: 40px; height: 40px; opacity: 0.05; cursor: pointer; z-index: 9999; }
     </style>
 </head>
 <body>
 
     <div class="header-area">
-        <h1 id="mainHeading" style="margin:0; font-size: 22px;">استعلامات القصر الفرنسي</h1>
-        <p id="siteBrief" style="margin:5px 0 0 0; font-size:13px; opacity:0.8;"></p>
+        <h1 id="mainHeading">استعلامات القصر الفرنسي</h1>
+        <p id="breadCrumb" style="font-size: 12px; color: var(--accent); font-weight: bold;">الرئيسية</p>
     </div>
 
-    <div id="mainCategories"></div>
+    <div id="appContainer" class="grid-container"></div>
 
-    <div id="subPage">
-        <h2 id="currentCatTitle" style="text-align: center; color: #0369a1; margin-bottom: 10px;"></h2>
-        <div id="buttonsContainer"></div>
-        <button class="back-btn" onclick="goBack()">🔙 العودة للرئيسية</button>
+    <div id="navArea" class="back-nav" style="display:none;">
+        <button class="back-btn" onclick="goBack()">🔙 العودة للسابق</button>
     </div>
 
     <div class="admin-trigger" onclick="checkAdmin()">⚙️</div>
 
     <div id="adminPanel">
-        <h2 style="text-align:center; color: var(--accent);">إدارة المستشفى</h2>
+        <h2 style="text-align:center;">النظام العالمي لإدارة المستشفى</h2>
         
         <div class="admin-section">
-            <h4>📦 أولاً: إضافة قسم جديد (مثل: الاطباء)</h4>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="newCatInp" placeholder="اسم القسم الجديد" style="margin:0;">
-                <button class="btn-action" style="background: #0369a1; width: 80px; margin:0;" onclick="addCategory()">إضافة</button>
-            </div>
-            <div id="catsList" style="margin-top:10px; font-size:12px;"></div>
+            <h4>1. إضافة قسم (رئيسي أو فرعي)</h4>
+            <select id="parentLevelSelect"><option value="root">-- قسم رئيسي جديد --</option></select>
+            <input type="text" id="catNameInp" placeholder="اسم القسم (مثلاً: الباطنة)">
+            <button class="btn-save" onclick="saveCategory()" style="background:#0369a1;">إنشاء القسم ✅</button>
         </div>
 
         <div class="admin-section">
-            <h4 id="formTitle">➕ ثانياً: إضافة طبيب أو عيادة</h4>
-            <input type="hidden" id="editKey">
-            <label>اختر القسم (التصنيف):</label>
-            <select id="parentCatSelect"></select>
-            
-            <input type="text" id="btnName" placeholder="الاسم (مثلاً: د. أحمد علي)">
+            <h4 id="formTitle">2. إضافة دكتور/بيانات (داخل قسم فرعي)</h4>
+            <select id="finalCatSelect"><option value="">اختر القسم الفرعي أولاً</option></select>
+            <input type="text" id="drName" placeholder="اسم الدكتور">
             <input type="file" id="imgFile" accept="image/*">
-            
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="tStart" placeholder="من (الساعة)" style="flex:1">
-                <select id="pStart" style="flex:1"><option>صباحاً</option><option>مساءً</option></select>
-                <input type="text" id="tEnd" placeholder="إلى (الساعة)" style="flex:1">
-                <select id="pEnd" style="flex:1"><option>مساءً</option><option>صباحاً</option></select>
-            </div>
-
-            <div id="customFields"></div>
-            <button onclick="addCustomField('', '')" style="background:#6366f1; color:white; border:none; padding:8px; border-radius:8px; width:100%; margin-bottom:10px; cursor:pointer;">➕ إضافة تفاصيل أخرى</button>
-
-            <input type="text" id="mapLink" placeholder="رابط جوجل ماب">
-            <input type="text" id="whatsapp" placeholder="رقم الواتساب (بدون أصفار)">
-            
-            <button id="mainSaveBtn" class="btn-action" style="background:#10b981;" onclick="saveToFirebase()">حفظ الآن ✅</button>
-            <button id="cancelEditBtn" class="btn-action" style="background:#94a3b8; display:none;" onclick="resetForm()">إلغاء التعديل</button>
+            <input type="text" id="drTime" placeholder="المواعيد (مثلاً: من 10 ص إلى 2 ظ)">
+            <input type="text" id="drMap" placeholder="رابط جوجل ماب">
+            <input type="text" id="drWa" placeholder="رقم الواتساب">
+            <button class="btn-save" onclick="saveData()">حفظ البيانات ✅</button>
         </div>
 
-        <button class="btn-action" style="background:#ef4444;" onclick="closeAdmin()">❌ إغلاق لوحة التحكم</button>
-        <div id="manageDataList" style="margin-top:20px;"></div>
+        <button class="btn-save" style="background:#ef4444; margin-top:10px;" onclick="location.reload()">❌ خروج وإعادة تحميل</button>
+        <div id="manageList" style="margin-top:20px; font-size:12px;"></div>
     </div>
 
     <div id="detailModal" class="modal">
         <div class="modal-content">
-            <h2 id="modalTitle" style="color:#0369a1; margin:0 0 10px 0;"></h2>
+            <h2 id="modalTitle"></h2>
             <img id="modalImg">
-            <div id="modalDataBox" class="info-card"></div>
-            <a id="modalMap" class="map-btn" target="_blank">📍 الموقع على الخريطة</a>
-            <a id="modalWa" href="#" target="_blank" style="display:block; background:#25d366; color:white; text-decoration:none; padding:15px; border-radius:15px; margin-top:10px; font-weight:bold;">💬 تواصل واتساب</a>
-            <button onclick="closeModal()" style="border:none; background:none; color:#64748b; margin-top:15px; cursor:pointer; font-weight:bold;">إغلاق</button>
+            <div id="modalInfo" style="text-align: right; background: #f0f9ff; padding: 15px; border-radius: 15px; margin-bottom: 10px;"></div>
+            <a id="modalMap" style="display:none; background:#0ea5e9; color:white; text-decoration:none; padding:12px; border-radius:15px; display:block; margin-bottom:10px; font-weight:bold;" target="_blank">📍 الخريطة</a>
+            <a id="modalWa" style="background:#25d366; color:white; text-decoration:none; padding:12px; border-radius:15px; display:block; font-weight:bold;" target="_blank">💬 واتساب</a>
+            <button onclick="closeModal()" style="margin-top:15px; border:none; background:none; color:#64748b; font-weight:bold; cursor:pointer;">إغلاق</button>
         </div>
     </div>
 
     <script>
-        // الربط مع Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0",
             databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/"
@@ -155,188 +115,105 @@
         firebase.initializeApp(firebaseConfig);
         const rdb = firebase.database();
 
-        let categories = [];
-        let allData = {};
-        let currentEditingImg = "";
+        let categories = {};
+        let items = {};
+        let history = ['root'];
 
-        // مزامنة الأقسام
-        rdb.ref('categories').on('value', s => {
-            const val = s.val();
-            categories = val ? Object.entries(val).map(([id, name]) => ({id, name})) : [];
-            renderCategories();
-            updateAdminCats();
-        });
+        // جلب البيانات
+        rdb.ref('global_cats').on('value', s => { categories = s.val() || {}; renderApp(); updateSelectors(); });
+        rdb.ref('global_items').on('value', s => { items = s.val() || {}; renderApp(); });
 
-        // مزامنة البيانات (الأطباء)
-        rdb.ref('bookings').on('value', s => {
-            allData = s.val() || {};
-            renderManageDataList();
-            // تحديث العرض إذا كان المستخدم داخل قسم حالياً
-            const currentCat = document.getElementById('currentCatTitle').innerText;
-            if(currentCat) openCategory(currentCat);
-        });
-
-        // إدارة الأقسام
-        function addCategory() {
-            const name = document.getElementById('newCatInp').value;
-            if(name) { rdb.ref('categories').push(name); document.getElementById('newCatInp').value = ''; }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('mainCategories');
-            container.innerHTML = '';
-            categories.forEach(cat => {
-                const b = document.createElement('button');
-                b.className = 'cat-btn';
-                let icon = cat.name.includes("دكتور") || cat.name.includes("أطباء") ? "👨‍⚕️" : "🏥";
-                b.innerHTML = `<span>${icon}</span> ${cat.name}`;
-                b.onclick = () => openCategory(cat.name);
-                container.appendChild(b);
-            });
-        }
-
-        function updateAdminCats() {
-            const sel = document.getElementById('parentCatSelect');
-            sel.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-            const list = document.getElementById('catsList');
-            list.innerHTML = categories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; background:#fff; padding:5px; border-radius:5px;"><span>${c.name}</span> <button onclick="deleteItem('categories/${c.id}')" style="color:red; border:none; background:none;">حذف</button></div>`).join('');
-        }
-
-        // فتح القسم وعرض الأطباء (2 في الصف)
-        function openCategory(catName) {
-            document.getElementById('mainCategories').style.display = 'none';
-            document.getElementById('subPage').style.display = 'block';
-            document.getElementById('currentCatTitle').innerText = catName;
-            const container = document.getElementById('buttonsContainer');
+        function renderApp() {
+            const currentLevel = history[history.length - 1];
+            const container = document.getElementById('appContainer');
             container.innerHTML = '';
             
-            // فلترة البيانات التي تنتمي لهذا القسم فقط
-            Object.keys(allData).forEach(key => {
-                const d = allData[key];
-                if (d.parentCat === catName) {
+            // تحديث شريط المسار
+            document.getElementById('breadCrumb').innerText = history.join(' > ');
+            document.getElementById('navArea').style.display = history.length > 1 ? 'block' : 'none';
+
+            // عرض الأقسام التابعة لهذا المستوى
+            Object.keys(categories).forEach(id => {
+                if (categories[id].parent === currentLevel) {
                     const b = document.createElement('button');
                     b.className = 'main-btn';
-                    b.innerHTML = `<span>👤</span> ${d.btnName}`;
-                    b.onclick = () => showDetails(d);
+                    b.innerHTML = `📂<br>${categories[id].name}`;
+                    b.onclick = () => { history.push(categories[id].name); renderApp(); };
+                    container.appendChild(b);
+                }
+            });
+
+            // عرض الأطباء/البيانات التابعة لهذا المستوى
+            Object.keys(items).forEach(id => {
+                if (items[id].parent === currentLevel) {
+                    const b = document.createElement('button');
+                    b.className = 'main-btn';
+                    b.style.background = 'linear-gradient(to bottom, #ffffff, #e0f2fe)';
+                    b.innerHTML = `👤<br>${items[id].name}`;
+                    b.onclick = () => showDetails(items[id]);
                     container.appendChild(b);
                 }
             });
         }
 
-        function goBack() {
-            document.getElementById('mainCategories').style.display = 'grid';
-            document.getElementById('subPage').style.display = 'none';
-            document.getElementById('currentCatTitle').innerText = '';
-        }
-
-        // حفظ وتعديل البيانات
-        async function saveToFirebase() {
-            const key = document.getElementById('editKey').value;
-            const file = document.getElementById('imgFile').files[0];
-            let imgToSave = currentEditingImg;
-
-            if (file) { 
-                imgToSave = await new Promise(r => { const reader = new FileReader(); reader.onload = e => r(e.target.result); reader.readAsDataURL(file); }); 
-            }
-            
-            const fields = [];
-            document.querySelectorAll('.dynamic-row').forEach(row => {
-                fields.push({label: row.querySelector('.f-label').value, value: row.querySelector('.f-value').value});
-            });
-
-            const data = {
-                parentCat: document.getElementById('parentCatSelect').value,
-                btnName: document.getElementById('btnName').value,
-                img: imgToSave,
-                map: document.getElementById('mapLink').value,
-                whatsapp: "20" + document.getElementById('whatsapp').value.replace(/^0/, '').replace(/\s/g, ''),
-                time: `من ${document.getElementById('tStart').value} ${document.getElementById('pStart').value} إلى ${document.getElementById('tEnd').value} ${document.getElementById('pEnd').value}`,
-                fields: fields
-            };
-
-            if (key) {
-                await rdb.ref('bookings/' + key).set(data);
-                alert("تم التحديث بنجاح ✅");
-            } else {
-                await rdb.ref('bookings').push(data);
-                alert("تمت الإضافة بنجاح ✅");
-            }
-            resetForm();
-        }
+        function goBack() { if(history.length > 1) { history.pop(); renderApp(); } }
 
         function showDetails(d) {
-            document.getElementById('modalTitle').innerText = d.btnName;
+            document.getElementById('modalTitle').innerText = d.name;
             const im = document.getElementById('modalImg');
             if(d.img) { im.src = d.img; im.style.display = 'block'; } else { im.style.display = 'none'; }
-            let h = `<p>⏰ <b>الموعد:</b> ${d.time}</p>`;
-            if(d.fields) d.fields.forEach(f => h += `<p><b>${f.label}:</b> ${f.value}</p>`);
-            document.getElementById('modalDataBox').innerHTML = h;
-            const mBtn = document.getElementById('modalMap');
-            if(d.map) { mBtn.href = d.map; mBtn.style.display = 'block'; } else { mBtn.style.display = 'none'; }
-            document.getElementById('modalWa').href = `https://wa.me/${d.whatsapp}`;
+            document.getElementById('modalInfo').innerHTML = `<p>⏰ <b>الموعد:</b> ${d.time}</p>`;
+            const m = document.getElementById('modalMap');
+            if(d.map) { m.href = d.map; m.style.display = 'block'; } else { m.style.display = 'none'; }
+            document.getElementById('modalWa').href = `https://wa.me/20${d.wa}`;
             document.getElementById('detailModal').style.display = 'flex';
         }
 
-        function renderManageDataList() {
-            const list = document.getElementById('manageDataList');
-            list.innerHTML = '<h4>قائمة الكل (للتعديل والحذف):</h4>';
-            Object.keys(allData).forEach(key => {
-                const d = allData[key];
-                const m = document.createElement('div');
-                m.style = "display:flex; justify-content:space-between; background:#fff; padding:10px; border-radius:10px; margin-bottom:5px; border:1px solid #eee; align-items:center; font-size:12px;";
-                m.innerHTML = `<span>[${d.parentCat}] ${d.btnName}</span> 
-                <div>
-                    <button onclick="prepareEdit('${key}')" style="background:#eab308; color:white; border:none; padding:5px; border-radius:5px;">تعديل</button>
-                    <button onclick="deleteItem('bookings/${key}')" style="background:#ef4444; color:white; border:none; padding:5px; border-radius:5px;">حذف</button>
-                </div>`;
-                list.appendChild(m);
+        // وظائف الإدارة
+        function saveCategory() {
+            const name = document.getElementById('catNameInp').value;
+            const parent = document.getElementById('parentLevelSelect').value;
+            if(name) {
+                rdb.ref('global_cats').push({ name, parent });
+                document.getElementById('catNameInp').value = '';
+                alert("تم إنشاء القسم بنجاح");
+            }
+        }
+
+        async function saveData() {
+            const parent = document.getElementById('finalCatSelect').value;
+            const name = document.getElementById('drName').value;
+            const file = document.getElementById('imgFile').files[0];
+            let imgBase64 = "";
+            if (file) imgBase64 = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
+
+            if(name && parent) {
+                rdb.ref('global_items').push({
+                    name, parent, time: document.getElementById('drTime').value,
+                    map: document.getElementById('drMap').value,
+                    wa: document.getElementById('drWa').value,
+                    img: imgBase64
+                });
+                alert("تم حفظ الدكتور بنجاح");
+            }
+        }
+
+        function updateSelectors() {
+            const pSel = document.getElementById('parentLevelSelect');
+            const fSel = document.getElementById('finalCatSelect');
+            let options = '<option value="root">-- قسم رئيسي جديد --</option>';
+            let fOptions = '<option value="">اختر القسم المناسب</option>';
+            
+            Object.values(categories).forEach(c => {
+                options += `<option value="${c.name}">${c.name}</option>`;
+                fOptions += `<option value="${c.name}">${c.name}</option>`;
             });
-        }
-
-        function prepareEdit(key) {
-            const d = allData[key];
-            document.getElementById('editKey').value = key;
-            document.getElementById('parentCatSelect').value = d.parentCat;
-            document.getElementById('btnName').value = d.btnName;
-            document.getElementById('mapLink').value = d.map || '';
-            currentEditingImg = d.img || "";
-            document.getElementById('whatsapp').value = d.whatsapp.replace('20', '');
-            document.getElementById('customFields').innerHTML = '';
-            if(d.fields) d.fields.forEach(f => addCustomField(f.label, f.value));
-            document.getElementById('formTitle').innerText = "📝 تعديل بيانات: " + d.btnName;
-            document.getElementById('mainSaveBtn').innerText = "تحديث الآن";
-            document.getElementById('mainSaveBtn').style.background = "#eab308";
-            document.getElementById('cancelEditBtn').style.display = "block";
-            document.getElementById('adminPanel').scrollTo(0,0);
-        }
-
-        function addCustomField(l, v) {
-            const div = document.createElement('div');
-            div.className = 'dynamic-row';
-            div.style = "display:flex; gap:5px; margin-bottom:5px;";
-            div.innerHTML = `<input type="text" value="${l}" class="f-label" placeholder="العنوان" style="flex:1; margin:0;"><input type="text" value="${v}" class="f-value" placeholder="التفاصيل" style="flex:2; margin:0;"><button onclick="this.parentElement.remove()" style="color:red; background:none; border:none; font-weight:bold;">X</button>`;
-            document.getElementById('customFields').appendChild(div);
+            pSel.innerHTML = options;
+            fSel.innerHTML = fOptions;
         }
 
         function checkAdmin() { if(prompt("كلمة السر:") === "1987") document.getElementById('adminPanel').style.display = 'block'; }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
-        function deleteItem(path) { if(confirm("هل أنت متأكد من الحذف؟")) rdb.ref(path).remove(); }
-        
-        function resetForm() { 
-            document.getElementById('editKey').value = ''; 
-            document.getElementById('btnName').value = '';
-            document.getElementById('whatsapp').value = '';
-            document.getElementById('mapLink').value = '';
-            document.getElementById('customFields').innerHTML = ''; 
-            addCustomField('الدكتور', ''); 
-            addCustomField('السعر', '');
-            document.getElementById('formTitle').innerText = "➕ إضافة بيانات جديدة";
-            document.getElementById('mainSaveBtn').innerText = "حفظ الآن ✅";
-            document.getElementById('mainSaveBtn').style.background = "#10b981";
-            document.getElementById('cancelEditBtn').style.display = "none";
-            currentEditingImg = "";
-        }
     </script>
 </body>
 </html>
