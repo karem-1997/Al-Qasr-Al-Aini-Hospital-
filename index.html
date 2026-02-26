@@ -186,10 +186,13 @@
         firebase.initializeApp(config);
         const db = firebase.database();
 
+        // تم تغيير المسار هنا لتصفير السحابة نهائياً
+        const DATA_PATH = 'hospital_v12_reset';
+
         let dataStore = { cats: {}, drs: {}, settings: {} };
         let currentPath = ['root'];
 
-        db.ref('hospital_v10_ultra').on('value', (s) => {
+        db.ref(DATA_PATH).on('value', (s) => {
             dataStore = s.val() || { cats: {}, drs: {}, settings: {} };
             applySettings(); render(); syncAdminUI();
         });
@@ -204,7 +207,7 @@
         }
 
         function saveSettings() {
-            db.ref('hospital_v10_ultra/settings').set({
+            db.ref(DATA_PATH + '/settings').set({
                 title: document.getElementById('setMainTitle').value,
                 desc: document.getElementById('setDesc').value,
                 fb: document.getElementById('setFbUrl').value
@@ -264,8 +267,8 @@
             const name = document.getElementById('catName').value, id = document.getElementById('editCatId').value;
             const data = { name, parent: document.getElementById('catParent').value, icon: document.getElementById('catIcon').value };
             if(!name) return;
-            if(id) db.ref('hospital_v10_ultra/cats/'+id).update(data);
-            else db.ref('hospital_v10_ultra/cats').push(data);
+            if(id) db.ref(DATA_PATH + '/cats/'+id).update(data);
+            else db.ref(DATA_PATH + '/cats').push(data);
             resetCatForm();
         }
 
@@ -276,8 +279,8 @@
             const timeStr = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
             const data = { name, parent: document.getElementById('drParent').value, wa: document.getElementById('drWa').value, loc: document.getElementById('drLoc').value, time: timeStr, fields, emoji: emoji || "" };
             if(img) data.img = img; else if(id) data.img = dataStore.drs[id].img || "";
-            if(id) db.ref('hospital_v10_ultra/drs/'+id).set(data);
-            else db.ref('hospital_v10_ultra/drs').push(data);
+            if(id) db.ref(DATA_PATH + '/drs/'+id).set(data);
+            else db.ref(DATA_PATH + '/drs').push(data);
             alert("تم الحفظ!"); resetDrForm();
         }
 
@@ -324,7 +327,7 @@
             showSection('sec-add-dr');
         }
 
-        function del(t, id) { if(confirm("حذف نهائي؟")) db.ref(`hospital_v10_ultra/${t}/${id}`).remove(); }
+        function del(t, id) { if(confirm("حذف نهائي؟")) db.ref(DATA_PATH + `/${t}/${id}`).remove(); }
         function addField(l='', v='') {
             const div = document.createElement('div'); div.className = 'f-row'; div.style = "display:flex; gap:5px; margin-bottom:5px;";
             div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}">`;
