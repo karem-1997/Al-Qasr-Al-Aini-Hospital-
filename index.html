@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">استعلامات القصر العيني الفرنساوي</title>
+    <title id="pageTitle">استعلامات القصر العيني الفرنسي</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
@@ -94,7 +94,7 @@
     <div id="adminPanel">
         <div class="admin-section">
             <h4>⚙️ إعدادات واجهة الموقع</h4>
-            <input type="text" id="siteNameInp" placeholder="اسم الموقع (المستشفى)">
+            <input type="text" id="siteNameInp" placeholder="اسم الموقع (مثلاً: القصر العيني الفرنسي)">
             <input type="text" id="siteBriefInp" placeholder="نبذة صغيرة تظهر تحت الاسم">
             <input type="text" id="fbLinkInp" placeholder="رابط الفيسبوك">
             <button class="btn-action" style="background:#10b981;" onclick="saveSiteSettings()">حفظ إعدادات الموقع</button>
@@ -162,7 +162,6 @@
 
         let currentEditingImg = "";
 
-        // حفظ إعدادات الموقع الرئيسية
         function saveSiteSettings() {
             const settings = {
                 name: document.getElementById('siteNameInp').value,
@@ -172,12 +171,13 @@
             rdb.ref('site_config').set(settings).then(() => alert("تم حفظ إعدادات الموقع بنجاح ✅"));
         }
 
-        // جلب إعدادات الموقع
         rdb.ref('site_config').on('value', s => {
             const d = s.val() || {};
-            document.getElementById('mainHeading').innerText = d.name || "استعلامات القصر العيني الفرنساوي";
+            const siteName = d.name || "استعلامات القصر العيني الفرنسي";
+            document.getElementById('mainHeading').innerText = siteName;
+            document.getElementById('pageTitle').innerText = siteName; // لتغيير عنوان الرابط أيضاً
             document.getElementById('siteBrief').innerText = d.brief || "";
-            document.getElementById('siteNameInp').value = d.name || "";
+            document.getElementById('siteNameInp').value = siteName;
             document.getElementById('siteBriefInp').value = d.brief || "";
             document.getElementById('fbLinkInp').value = d.fb || "";
             const fbBtn = document.getElementById('fbLinkTag');
@@ -311,4 +311,3 @@
     </script>
 </body>
 </html>
-
