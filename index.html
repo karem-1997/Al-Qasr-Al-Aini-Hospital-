@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">استعلامات القصر العيني الفرنساوي</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { 
+            --accent: #0284c7; 
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%);
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: var(--bg-gradient); background-attachment: fixed; 
+            margin: 0; padding: 15px; color: #0c4a6e;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+
+        .header-area {
+            text-align: center; padding: 20px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px); border-radius: 20px;
+            margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        #siteBrief { font-size: 14px; color: #0369a1; margin-top: 5px; font-weight: 500; }
+        #fbLinkTag { margin-top: 10px; display: none; text-decoration: none; background: #1877F2; color: white; padding: 6px 15px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+
+        #buttonsContainer { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;
+        }
+
+        .main-btn { 
+            background: linear-gradient(to bottom, #ffffff, #e0f2fe);
+            border: 1px solid #bae6fd; padding: 20px 10px; 
+            border-radius: 18px; cursor: pointer; font-weight: 800; 
+            color: #0369a1; box-shadow: 0 6px 0 #38bdf8, 0 10px 15px rgba(0,0,0,0.1);
+            transition: all 0.1s ease; transform: translateY(-4px); font-size: 16px;
+        }
+
+        .main-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #38bdf8, 0 4px 8px rgba(0,0,0,0.1); }
+
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(15px); 
+            justify-content: center; align-items: center; z-index: 2000; 
+        }
+        
+        .modal-content { 
+            background: rgba(255, 255, 255, 0.4); padding: 25px; 
+            border-radius: 35px; width: 85%; max-width: 400px; text-align: center; 
+            border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+        }
+
+        .info-card { text-align: right; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 20px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2); }
+        .info-card p { margin: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px; font-size: 15px; }
+
+        #modalImg { width: 100%; border-radius: 20px; max-height: 200px; object-fit: cover; margin-bottom: 10px; display: none; }
+
+        .footer-msg { text-align: center; padding: 30px 15px; margin-top: auto; }
+        .footer-msg p { font-size: 15px; font-weight: 600; color: #0369a1; line-height: 1.7; margin: 0; }
+
+        .admin-trigger { position: fixed; bottom: 8px; right: 8px; width: 30px; height: 30px; background: transparent; cursor: pointer; z-index: 9999; color: rgba(3, 105, 161, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        #adminPanel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 480px; background: white; padding: 20px; border-radius: 25px; z-index: 10001; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 100px rgba(0,0,0,0.5); }
+        .admin-section { background: #f1f5f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; box-sizing: border-box; font-family: inherit; }
+        .time-row { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; }
+        .dynamic-row { display: flex; gap: 5px; margin-bottom: 8px; border-right: 3px solid var(--accent); padding-right: 5px; }
+        .btn-action { padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; border: none; color: white; width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-area">
+        <h1 id="mainHeading" style="margin:0; font-size: 22px;">تحميل...</h1>
+        <div id="siteBrief"></div>
+        <a id="fbLinkTag" target="_blank">صفحة الفيسبوك</a>
+    </div>
+
+    <div id="buttonsContainer"></div>
+
+    <div class="footer-msg">
+        <p>يدٌ تمتد للمساعدة.. وقلوبٌ تنبض بالأمل.<br>
+        هدفنا أن نكون بجانبكم في رحلة التعافي، سائلين المولى عز وجل أن يمنّ بالشفاء العاجل على كل مريض. دمتم في حفظ الله ورعايته. ❤️</p>
+    </div>
+    
+    <div class="admin-trigger" onclick="checkAdmin()">⚙️</div>
+
+    <div id="adminPanel">
+        <div class="admin-section">
+            <h4>⚙️ إعدادات واجهة الموقع</h4>
+            <input type="text" id="siteNameInp" placeholder="اسم الموقع (المستشفى)">
+            <input type="text" id="siteBriefInp" placeholder="نبذة صغيرة تظهر تحت الاسم">
+            <input type="text" id="fbLinkInp" placeholder="رابط الفيسبوك">
+            <button class="btn-action" style="background:#10b981;" onclick="saveSiteSettings()">حفظ إعدادات الموقع</button>
+        </div>
+
+        <div class="admin-section">
+            <h4 id="formTitle">➕ إضافة قسم جديد</h4>
+            <input type="hidden" id="editKey">
+            <input type="text" id="btnName" placeholder="اسم القسم (العيادة)">
+            
+            <label style="font-size: 12px; color: #64748b;">صورة العيادة:</label>
+            <input type="file" id="imgFile" accept="image/*">
+            
+            <p style="font-size: 12px; font-weight: bold; margin: 10px 0 5px;">الموعد:</p>
+            <div class="time-row">
+                <input type="text" id="timeStart" placeholder="من (مثلاً 9)" style="margin-bottom:0">
+                <select id="periodStart" style="margin-bottom:0"><option>صباحاً</option><option>مساءً</option></select>
+            </div>
+            <div class="time-row">
+                <input type="text" id="timeEnd" placeholder="إلى (مثلاً 1)" style="margin-bottom:0">
+                <select id="periodEnd" style="margin-bottom:0"><option>مساءً</option><option>صباحاً</option></select>
+            </div>
+
+            <p style="font-size: 12px; font-weight: bold; margin: 15px 0 5px;">بيانات العيادة (الدكتور، السعر...):</p>
+            <div id="customFields"></div>
+            <button onclick="addCustomField('', '')" style="background:#6366f1; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; width:100%; font-size:12px;">➕ إضافة خانة وصف جديدة</button>
+
+            <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top:10px;">
+                <label style="font-size: 12px;">رقم الواتساب:</label>
+                <div style="display:flex; gap:5px;">
+                    <select id="countryCode" style="width:100px;"><option value="20">مصر +20</option><option value="966">السعودية +966</option></select>
+                    <input type="text" id="whatsapp" placeholder="الرقم">
+                </div>
+            </div>
+
+            <button id="mainSaveBtn" class="btn-action" style="background:var(--accent);" onclick="saveToFirebase()">حفظ القسم</button>
+            <button id="cancelEditBtn" class="btn-action" style="background:#94a3b8; display:none;" onclick="resetForm()">إلغاء</button>
+        </div>
+        <button class="btn-action" style="background:#64748b;" onclick="closeAdmin()">❌ إغلاق</button>
+        <div id="manageList" style="margin-top:15px;"></div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="margin:0 0 10px 0; color:#0369a1;"></h2>
+            <img id="modalImg" src="">
+            <div id="modalDataBox" class="info-card"></div>
+            <a id="modalWa" href="#" target="_blank" style="display:block; background:#25d366; color:white; text-decoration:none; padding:15px; border-radius:20px; margin:20px 0; font-weight:bold;">تواصل واتساب</a>
+            <button onclick="closeModal()" style="border:none; background:none; color:#64748b; cursor:pointer; font-weight:bold;">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0",
+            authDomain: "al-qasr-hospital.firebaseapp.com",
+            databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/",
+            projectId: "al-qasr-hospital",
+            storageBucket: "al-qasr-hospital.firebasestorage.app",
+            messagingSenderId: "312093157417",
+            appId: "1:312093157417:web:094b06450b21d52e84d438"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const rdb = firebase.database();
+
+        let currentEditingImg = "";
+
+        // حفظ إعدادات الموقع الرئيسية
+        function saveSiteSettings() {
+            const settings = {
+                name: document.getElementById('siteNameInp').value,
+                brief: document.getElementById('siteBriefInp').value,
+                fb: document.getElementById('fbLinkInp').value
+            };
+            rdb.ref('site_config').set(settings).then(() => alert("تم حفظ إعدادات الموقع بنجاح ✅"));
+        }
+
+        // جلب إعدادات الموقع
+        rdb.ref('site_config').on('value', s => {
+            const d = s.val() || {};
+            document.getElementById('mainHeading').innerText = d.name || "استعلامات القصر العيني الفرنساوي";
+            document.getElementById('siteBrief').innerText = d.brief || "";
+            document.getElementById('siteNameInp').value = d.name || "";
+            document.getElementById('siteBriefInp').value = d.brief || "";
+            document.getElementById('fbLinkInp').value = d.fb || "";
+            const fbBtn = document.getElementById('fbLinkTag');
+            if(d.fb) { fbBtn.href = d.fb; fbBtn.style.display = 'inline-block'; } else { fbBtn.style.display = 'none'; }
+        });
+
+        function addCustomField(label = '', value = '') {
+            const div = document.createElement('div');
+            div.className = 'dynamic-row';
+            div.innerHTML = `
+                <input type="text" placeholder="الاسم" value="${label}" class="f-label" style="flex:1; margin-bottom:0">
+                <input type="text" placeholder="التفاصيل" value="${value}" class="f-value" style="flex:2; margin-bottom:0">
+                <button onclick="this.parentElement.remove()" style="background:none; border:none; color:red; cursor:pointer;">X</button>
+            `;
+            document.getElementById('customFields').appendChild(div);
+        }
+
+        rdb.ref('bookings').on('value', snapshot => {
+            const container = document.getElementById('buttonsContainer');
+            const manageList = document.getElementById('manageList');
+            container.innerHTML = ''; manageList.innerHTML = '<h4>الأقسام الحالية:</h4>';
+            snapshot.forEach(child => {
+                const data = child.val(); const key = child.key;
+                const b = document.createElement('button');
+                b.className = 'main-btn'; b.innerText = data.btnName;
+                b.onclick = () => showDetails(data);
+                container.appendChild(b);
+
+                const m = document.createElement('div');
+                m.style = "display:flex; justify-content:space-between; background:#fff; padding:8px; border-radius:10px; margin-bottom:5px; border:1px solid #eee;";
+                m.innerHTML = `<span>${data.btnName}</span> <div><button onclick="prepareEdit('${key}')" style="background:#eab308; color:white; border:none; padding:4px 8px; border-radius:5px;">تعديل</button> <button onclick="deleteItem('${key}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:5px;">حذف</button></div>`;
+                manageList.appendChild(m);
+            });
+        });
+
+        async function saveToFirebase() {
+            const key = document.getElementById('editKey').value;
+            const file = document.getElementById('imgFile').files[0];
+            let imgToSave = currentEditingImg; 
+
+            if (file) { 
+                imgToSave = await new Promise(r => { 
+                    const reader = new FileReader(); 
+                    reader.onload = e => r(e.target.result); 
+                    reader.readAsDataURL(file); 
+                }); 
+            }
+            
+            const timeStr = `من ${document.getElementById('timeStart').value} ${document.getElementById('periodStart').value} إلى ${document.getElementById('timeEnd').value} ${document.getElementById('periodEnd').value}`;
+            const fields = [];
+            document.querySelectorAll('.dynamic-row').forEach(row => {
+                const l = row.querySelector('.f-label').value;
+                const v = row.querySelector('.f-value').value;
+                if(l && v) fields.push({label: l, value: v});
+            });
+
+            let pureNumber = document.getElementById('whatsapp').value.replace(/\s+/g, '');
+            if (pureNumber.startsWith('0')) pureNumber = pureNumber.substring(1);
+            const fullWa = document.getElementById('countryCode').value + pureNumber;
+
+            const data = { btnName: document.getElementById('btnName').value, img: imgToSave, whatsapp: fullWa, time: timeStr, fields: fields };
+
+            if (key) await rdb.ref('bookings/' + key).set(data);
+            else await rdb.ref('bookings').push(data);
+            
+            alert("تم حفظ القسم بنجاح ✅"); 
+            resetForm();
+        }
+
+        function prepareEdit(key) {
+            rdb.ref('bookings/' + key).once('value', s => {
+                const d = s.val();
+                resetForm();
+                document.getElementById('editKey').value = key;
+                document.getElementById('btnName').value = d.btnName;
+                currentEditingImg = d.img || ""; 
+                document.getElementById('whatsapp').value = d.whatsapp ? d.whatsapp.replace('20','').replace('966','') : '';
+                
+                if(d.time) {
+                    const t = d.time.split(' ');
+                    document.getElementById('timeStart').value = t[1] || '';
+                    document.getElementById('periodStart').value = t[2] || 'صباحاً';
+                    document.getElementById('timeEnd').value = t[4] || '';
+                    document.getElementById('periodEnd').value = t[5] || 'مساءً';
+                }
+
+                document.getElementById('customFields').innerHTML = '';
+                if(d.fields) d.fields.forEach(f => addCustomField(f.label, f.value));
+                
+                document.getElementById('formTitle').innerText = "تعديل: " + d.btnName;
+                document.getElementById('mainSaveBtn').innerText = "تحديث القسم";
+                document.getElementById('cancelEditBtn').style.display = "block";
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('editKey').value = '';
+            document.getElementById('btnName').value = '';
+            document.getElementById('whatsapp').value = '';
+            document.getElementById('timeStart').value = '';
+            document.getElementById('timeEnd').value = '';
+            document.getElementById('imgFile').value = '';
+            currentEditingImg = "";
+            document.getElementById('customFields').innerHTML = '';
+            addCustomField('الدكتور', ''); 
+            addCustomField('السعر', '');
+            document.getElementById('formTitle').innerText = "➕ إضافة قسم جديد";
+            document.getElementById('mainSaveBtn').innerText = "حفظ القسم";
+            document.getElementById('cancelEditBtn').style.display = "none";
+        }
+
+        function showDetails(d) {
+            document.getElementById('modalTitle').innerText = d.btnName;
+            const mImg = document.getElementById('modalImg');
+            if(d.img) { mImg.src = d.img; mImg.style.display = 'block'; }
+            else { mImg.style.display = 'none'; }
+            
+            const box = document.getElementById('modalDataBox');
+            box.innerHTML = `<p>⏰ <b>الموعد:</b> ${d.time}</p>`;
+            if(d.fields) d.fields.forEach(f => {
+                box.innerHTML += `<p><b>${f.label}:</b> ${f.value}</p>`;
+            });
+            document.getElementById('modalWa').href = `https://wa.me/${d.whatsapp}`;
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function checkAdmin() { if(prompt("كلمة السر:") === "1987") { document.getElementById('adminPanel').style.display = 'block'; resetForm(); } }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+        function deleteItem(k) { if(confirm("حذف القسم نهائياً؟")) rdb.ref('bookings/'+k).remove(); }
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
+    </script>
+</body>
+</html>
+
