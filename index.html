@@ -3,47 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة القصر الذكي</title>
+    <title>نظام إدارة القصر الفرنسي - النسخة الاحترافية</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root { --primary: #0284c7; --bg: #f0f9ff; --card-bg: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        :root { --primary: #0284c7; --bg: #f8fafc; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #e0f2fe; margin: 0; padding: 15px; direction: rtl; }
         
-        /* الهيدر والمسار */
-        .header { text-align: center; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        #pathDisplay { font-size: 14px; color: var(--primary); font-weight: bold; background: #e0f2fe; padding: 8px; border-radius: 10px; margin-top: 10px; display: inline-block; }
+        .header { text-align: center; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid white; }
+        #pathDisplay { font-size: 13px; color: var(--primary); font-weight: bold; background: #fff; padding: 5px 15px; border-radius: 50px; display: inline-block; margin-top: 5px; border: 1px solid #bae6fd; }
 
-        /* الشبكة - دكاترة أو أقسام جنب بعض */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card { 
-            background: var(--card-bg); padding: 25px 10px; border-radius: 20px; text-align: center; 
+            background: var(--white); padding: 25px 10px; border-radius: 20px; text-align: center; 
             cursor: pointer; box-shadow: 0 5px 0 #bae6fd; transition: 0.1s; border: 1px solid #e0f2fe;
             display: flex; flex-direction: column; align-items: center; gap: 10px; font-weight: bold; color: #0369a1;
         }
-        .card:active { transform: translateY(3px); box-shadow: 0 2px 0 #bae6fd; }
-        .card.doctor { background: #f0f9ff; border: 1px dashed var(--primary); }
+        .card:active { transform: translateY(3px); box-shadow: none; }
+        .card.dr-card { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); border: 1px solid var(--primary); }
 
-        /* لوحة التحكم */
-        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 9999; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .admin-box { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #cbd5e1; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
+        /* لوحة التحكم الجديدة */
+        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f5f9; z-index: 9999; padding: 15px; box-sizing: border-box; overflow-y: auto; }
+        .admin-box { background: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h4 { margin: 0 0 15px 0; color: var(--primary); border-right: 4px solid var(--primary); padding-right: 10px; }
         
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
-        .btn-add { background: var(--primary); }
-        .btn-save { background: #10b981; }
-        .btn-del { background: #ef4444; padding: 5px 10px; width: auto; font-size: 12px; }
-        .btn-edit { background: #f59e0b; padding: 5px 10px; width: auto; font-size: 12px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; box-sizing: border-box; font-size: 14px; }
+        .time-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        .field-row { display: flex; gap: 5px; margin-bottom: 8px; background: #f1f5f9; padding: 8px; border-radius: 10px; }
+        
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; transition: 0.2s; }
+        .btn-main { background: var(--primary); }
+        .btn-green { background: #10b981; }
+        .btn-red { background: #ef4444; }
+        .btn-edit { background: #f59e0b; padding: 6px 12px; width: auto; font-size: 12px; border-radius: 8px; }
+        .btn-del { background: #ef4444; padding: 6px 12px; width: auto; font-size: 12px; border-radius: 8px; }
 
-        /* المودال */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; }
-        #modalImg { width: 100%; border-radius: 15px; max-height: 200px; object-fit: cover; margin-bottom: 15px; }
+        /* إدارة المحتوى في لوحة التحكم */
+        .content-manager { margin-top: 10px; border-top: 2px dashed #e2e8f0; padding-top: 15px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fff; border: 1px solid #edf2f7; border-radius: 12px; margin-bottom: 8px; font-size: 14px; }
 
-        .admin-btn { position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; opacity: 0.2; cursor: pointer; z-index: 10001; }
-        .item-list { font-size: 13px; border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; }
+        #modalImg { width: 100%; border-radius: 20px; max-height: 200px; object-fit: cover; margin-bottom: 15px; }
+
+        .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; opacity: 0.2; cursor: pointer; z-index: 10001; }
     </style>
 </head>
 <body>
@@ -55,176 +60,252 @@
 
     <div id="mainGrid" class="grid"></div>
 
-    <div id="backBtnArea" style="display:none; margin-top:20px;">
-        <button class="btn" style="background:#64748b" onclick="goBack()">🔙 العودة للخلف</button>
+    <div id="navButtons" style="display:none; margin-top:20px;">
+        <button class="btn" style="background:#64748b" onclick="goBack()">🔙 رجوع خطوة</button>
+        <button class="btn" style="background:#0369a1" onclick="goHome()">🏠 الرئيسية</button>
     </div>
 
-    <div class="admin-btn" onclick="openAdmin()">⚙️</div>
+    <div class="admin-trigger" onclick="openAdmin()">⚙️</div>
 
     <div id="adminPanel">
-        <h2 style="text-align:center">لوحة تحكم "الشجرة الذكية"</h2>
+        <h2 style="text-align:center; color: var(--primary);">مركز الإدارة والتحكم</h2>
         
         <div class="admin-box">
-            <h4>📦 إضافة قسم (رئيسي أو فرعي)</h4>
-            <select id="catParentSelect"><option value="root">-- في الصفحة الرئيسية --</option></select>
-            <input type="text" id="catNameInp" placeholder="اسم القسم (مثلاً: العيادات)">
-            <button class="btn btn-add" onclick="addCategory()">إنشاء القسم ✅</button>
+            <h4>📦 إضافة قسم جديد</h4>
+            <input type="hidden" id="editCatId">
+            <select id="catParent"><option value="root">-- في الصفحة الرئيسية --</option></select>
+            <input type="text" id="catName" placeholder="اسم القسم الجديد">
+            <button class="btn btn-main" id="catBtn" onclick="saveCategory()">حفظ القسم ✅</button>
         </div>
 
         <div class="admin-box">
-            <h4>👤 إضافة دكتور (داخل أي قسم)</h4>
-            <select id="drParentSelect"></select>
-            <input type="text" id="drNameInp" placeholder="اسم الدكتور">
+            <h4>👤 إضافة / تعديل دكتور</h4>
+            <input type="hidden" id="editDrId">
+            <select id="drParent"></select>
+            <input type="text" id="drName" placeholder="اسم الدكتور">
             <input type="file" id="drFile" accept="image/*">
-            <input type="text" id="drTime" placeholder="المواعيد (مثلاً: يومياً 10 ص)">
-            <input type="text" id="drWa" placeholder="رقم الواتساب">
-            <button class="btn btn-save" onclick="addDoctor()">حفظ الدكتور في هذا القسم ✅</button>
+            
+            <p style="font-size:12px; margin:5px 0; font-weight: bold;">⏰ المواعيد:</p>
+            <div class="time-row">
+                <input type="text" id="tFrom" placeholder="من" style="flex:1">
+                <select id="pFrom" style="flex:1"><option>صباحاً</option><option>مساءً</option></select>
+                <input type="text" id="tTo" placeholder="إلى" style="flex:1">
+                <select id="pTo" style="flex:1"><option>مساءً</option><option>صباحاً</option></select>
+            </div>
+
+            <p style="font-size:12px; margin:5px 0; font-weight: bold;">📝 بيانات إضافية:</p>
+            <div id="dynamicFields"></div>
+            <button class="btn" style="background:#6366f1; font-size:12px; padding:8px;" onclick="addField()">➕ إضافة خانة بيانات</button>
+            
+            <input type="text" id="drWa" placeholder="رقم الواتساب (بدون أصفار)">
+            <button class="btn btn-green" id="drBtn" onclick="saveDoctor()">حفظ بيانات الدكتور ✅</button>
         </div>
 
         <div class="admin-box">
-            <h4>📋 الإدارة والحذف</h4>
-            <div id="adminList"></div>
+            <h4>📋 إدارة المحتوى (تعديل وحذف)</h4>
+            <p style="font-size: 11px; color: #64748b;">اختر القسم لعرض ما بداخله وتعديله:</p>
+            <select id="filterSelect" onchange="syncAdminList()"></select>
+            <div id="manageList" class="content-manager"></div>
         </div>
 
-        <button class="btn" style="background:black" onclick="closeAdmin()">إغلاق لوحة التحكم</button>
+        <button class="btn btn-red" onclick="closeAdmin()">إغلاق لوحة التحكم</button>
     </div>
 
-    <div id="detailsModal" class="modal" onclick="this.style.display='none'">
+    <div id="modal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 id="mTitle" style="color:#0369a1;"></h2>
+            <h2 id="mTitle" style="color:#0369a1; margin-top: 0;"></h2>
             <img id="modalImg">
-            <div id="mInfo" style="text-align:right; background:#f0f9ff; padding:15px; border-radius:15px; margin-bottom:15px;"></div>
-            <a id="mWa" class="btn btn-save" style="text-decoration:none; display:block; background:#25d366" target="_blank">💬 حجز واتساب</a>
-            <button class="btn" style="background:none; color:#64748b" onclick="document.getElementById('detailsModal').style.display='none'">إغلاق</button>
+            <div id="mInfo" style="text-align:right; background:#f0f9ff; padding:15px; border-radius:20px; font-size:14px; line-height: 1.6;"></div>
+            <a id="mWa" class="btn btn-green" style="text-decoration:none; display:block; background: #128c7e;" target="_blank">💬 حجز عبر واتساب</a>
+            <button class="btn" style="background:none; color:#64748b" onclick="document.getElementById('modal').style.display='none'">إغلاق</button>
         </div>
     </div>
 
     <script>
         // إعدادات Firebase
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0",
             databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/"
         };
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(config);
         const db = firebase.database();
 
-        let allData = { cats: {}, drs: {} };
-        let currentPath = ['root']; // مسار المجلد الحالي
+        let dataStore = { cats: {}, drs: {} };
+        let currentPath = ['root'];
 
         // مزامنة البيانات
-        db.ref('tree_system').on('value', (snapshot) => {
-            const data = snapshot.val() || { cats: {}, drs: {} };
-            allData = data;
+        db.ref('final_v3').on('value', (s) => {
+            dataStore = s.val() || { cats: {}, drs: {} };
             render();
-            updateSelects();
+            syncAdminUI();
         });
 
-        // وظيفة العرض الأساسية
+        // --- العرض للمستخدم ---
         function render() {
             const grid = document.getElementById('mainGrid');
             const parent = currentPath[currentPath.length - 1];
             grid.innerHTML = '';
             
             document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
-            document.getElementById('backBtnArea').style.display = currentPath.length > 1 ? 'block' : 'none';
+            document.getElementById('navButtons').style.display = currentPath.length > 1 ? 'block' : 'none';
 
-            // عرض الأقسام التابعة للمجلد الحالي
-            if(allData.cats) {
-                Object.entries(allData.cats).forEach(([id, cat]) => {
-                    if(cat.parent === parent) {
-                        const div = document.createElement('div');
-                        div.className = 'card';
-                        div.innerHTML = `<span style="font-size:30px">📂</span> ${cat.name}`;
-                        div.onclick = () => { currentPath.push(cat.name); render(); };
-                        grid.appendChild(div);
+            if(dataStore.cats) {
+                Object.values(dataStore.cats).forEach(c => {
+                    if(c.parent === parent) {
+                        const d = document.createElement('div');
+                        d.className = 'card';
+                        d.innerHTML = `<span style="font-size:35px">📂</span> ${c.name}`;
+                        d.onclick = () => { currentPath.push(c.name); render(); };
+                        grid.appendChild(d);
                     }
                 });
             }
 
-            // عرض الدكاترة التابعين للمجلد الحالي
-            if(allData.drs) {
-                Object.entries(allData.drs).forEach(([id, dr]) => {
+            if(dataStore.drs) {
+                Object.values(dataStore.drs).forEach(dr => {
                     if(dr.parent === parent) {
-                        const div = document.createElement('div');
-                        div.className = 'card doctor';
-                        div.innerHTML = `<span style="font-size:30px">👨‍⚕️</span> ${dr.name}`;
-                        div.onclick = () => showDoctor(dr);
-                        grid.appendChild(div);
+                        const d = document.createElement('div');
+                        d.className = 'card dr-card';
+                        d.innerHTML = `<span style="font-size:35px">👨‍⚕️</span> ${dr.name}`;
+                        d.onclick = () => showDr(dr);
+                        grid.appendChild(d);
                     }
                 });
             }
         }
 
         function goBack() { currentPath.pop(); render(); }
+        function goHome() { currentPath = ['root']; render(); }
 
-        // إضافة قسم
-        function addCategory() {
-            const name = document.getElementById('catNameInp').value;
-            const parent = document.getElementById('catParentSelect').value;
-            if(!name) return;
-            db.ref('tree_system/cats').push({ name, parent });
-            document.getElementById('catNameInp').value = '';
-            alert("تم إنشاء القسم بنجاح!");
+        // --- لوحة التحكم ---
+        function addField(l='', v='') {
+            const div = document.createElement('div');
+            div.className = 'field-row';
+            div.innerHTML = `<input type="text" placeholder="البيان (التخصص)" value="${l}" class="f-l">
+                             <input type="text" placeholder="التفاصيل" value="${v}" class="f-v">
+                             <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none; font-weight:bold;">X</button>`;
+            document.getElementById('dynamicFields').appendChild(div);
         }
 
-        // إضافة دكتور
-        async function addDoctor() {
-            const name = document.getElementById('drNameInp').value;
-            const parent = document.getElementById('drParentSelect').value;
+        function saveCategory() {
+            const name = document.getElementById('catName').value;
+            const parent = document.getElementById('catParent').value;
+            const id = document.getElementById('editCatId').value;
+            if(!name) return;
+
+            if(id) db.ref('final_v3/cats/'+id).update({ name, parent });
+            else db.ref('final_v3/cats').push({ name, parent });
+            
+            document.getElementById('catName').value = '';
+            document.getElementById('editCatId').value = '';
+            document.getElementById('catBtn').innerText = "حفظ القسم ✅";
+        }
+
+        async function saveDoctor() {
+            const name = document.getElementById('drName').value;
+            const parent = document.getElementById('drParent').value;
+            const id = document.getElementById('editDrId').value;
             const file = document.getElementById('drFile').files[0];
             let img = "";
+            
             if(file) img = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
 
-            if(!name || !parent) return alert("اختر القسم واكتب اسم الدكتور");
-
-            db.ref('tree_system/drs').push({
-                name, parent, img,
-                time: document.getElementById('drTime').value,
-                wa: document.getElementById('drWa').value
+            const fields = [];
+            document.querySelectorAll('.field-row').forEach(row => {
+                fields.push({ label: row.querySelector('.f-l').value, value: row.querySelector('.f-v').value });
             });
-            alert("تم إضافة الدكتور للقسم!");
-            document.getElementById('drNameInp').value = '';
-        }
 
-        // تحديث القوائم المنسدلة في التحكم
-        function updateSelects() {
-            const cSel = document.getElementById('catParentSelect');
-            const dSel = document.getElementById('drParentSelect');
-            const list = document.getElementById('adminList');
+            const timeStr = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
+            const data = { name, parent, time: timeStr, fields, wa: document.getElementById('drWa').value };
+            if(img) data.img = img;
+
+            if(id) db.ref('final_v3/drs/'+id).update(data);
+            else db.ref('final_v3/drs').push(data);
             
-            let options = '<option value="root">-- الصفحة الرئيسية --</option>';
-            if(allData.cats) {
-                Object.values(allData.cats).forEach(c => options += `<option value="${c.name}">${c.name}</option>`);
-            }
-            cSel.innerHTML = options;
-            dSel.innerHTML = options.replace('-- الصفحة الرئيسية --', '-- اختر القسم --');
-
-            // قائمة الحذف
-            list.innerHTML = '';
-            if(allData.cats) {
-                Object.entries(allData.cats).forEach(([id, c]) => {
-                    list.innerHTML += `<div class="item-list">📂 ${c.name} (داخل ${c.parent}) <button class="btn-del" onclick="deleteItem('cats','${id}')">حذف</button></div>`;
-                });
-            }
-            if(allData.drs) {
-                Object.entries(allData.drs).forEach(([id, d]) => {
-                    list.innerHTML += `<div class="item-list">👨‍⚕️ ${d.name} (في ${d.parent}) <button class="btn-del" onclick="deleteItem('drs','${id}')">حذف</button></div>`;
-                });
-            }
+            alert("تم الحفظ بنجاح!");
+            resetDrForm();
         }
 
-        function deleteItem(type, id) { if(confirm("حذف نهائي؟")) db.ref(`tree_system/${type}/${id}`).remove(); }
+        function syncAdminUI() {
+            const cp = document.getElementById('catParent');
+            const dp = document.getElementById('drParent');
+            const filter = document.getElementById('filterSelect');
+            
+            let opts = '<option value="root">-- الرئيسية --</option>';
+            if(dataStore.cats) Object.values(dataStore.cats).forEach(c => opts += `<option value="${c.name}">${c.name}</option>`);
+            
+            cp.innerHTML = opts;
+            dp.innerHTML = opts;
+            filter.innerHTML = '<option value="">-- اختر قسم لعرض محتواه --</option>' + opts;
+            syncAdminList();
+        }
 
-        function showDoctor(dr) {
+        function syncAdminList() {
+            const list = document.getElementById('manageList');
+            const filter = document.getElementById('filterSelect').value;
+            if(!filter) { list.innerHTML = '<p style="text-align:center; color:#94a3b8;">اختر قسماً من القائمة أعلاه لإدارة محتواه</p>'; return; }
+
+            list.innerHTML = '';
+            // عرض الأقسام اللي جوه القسم ده
+            if(dataStore.cats) Object.entries(dataStore.cats).forEach(([id, c]) => {
+                if(c.parent === filter) {
+                    list.innerHTML += `<div class="item-row"><span>📂 القسم: ${c.name}</span> 
+                        <div><button class="btn-edit" onclick="editCat('${id}')">تعديل</button>
+                        <button class="btn-del" onclick="del('cats','${id}')">حذف</button></div></div>`;
+                }
+            });
+            // عرض الدكاترة اللي جوه القسم ده
+            if(dataStore.drs) Object.entries(dataStore.drs).forEach(([id, d]) => {
+                if(d.parent === filter) {
+                    list.innerHTML += `<div class="item-row"><span>👨‍⚕️ د. ${d.name}</span> 
+                        <div><button class="btn-edit" onclick="editDr('${id}')">تعديل</button>
+                        <button class="btn-del" onclick="del('drs','${id}')">حذف</button></div></div>`;
+                }
+            });
+        }
+
+        function editCat(id) {
+            const c = dataStore.cats[id];
+            document.getElementById('editCatId').value = id;
+            document.getElementById('catName').value = c.name;
+            document.getElementById('catParent').value = c.parent;
+            document.getElementById('catBtn').innerText = "تحديث اسم القسم 🔄";
+            window.scrollTo(0,0);
+        }
+
+        function editDr(id) {
+            const d = dataStore.drs[id];
+            document.getElementById('editDrId').value = id;
+            document.getElementById('drName').value = d.name;
+            document.getElementById('drParent').value = d.parent;
+            document.getElementById('drWa').value = d.wa;
+            document.getElementById('dynamicFields').innerHTML = '';
+            if(d.fields) d.fields.forEach(f => addField(f.label, f.value));
+            document.getElementById('drBtn').innerText = "تحديث بيانات الدكتور 🔄";
+            window.scrollTo(0,0);
+        }
+
+        function del(t, id) { if(confirm("هل أنت متأكد من الحذف النهائي؟")) db.ref(`final_v3/${t}/${id}`).remove(); }
+
+        function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name;
             const img = document.getElementById('modalImg');
             if(dr.img) { img.src = dr.img; img.style.display = 'block'; } else { img.style.display = 'none'; }
-            document.getElementById('mInfo').innerHTML = `<p><b>🕒 المواعيد:</b> ${dr.time}</p>`;
+            let info = `<p><b>🕒 المواعيد:</b> ${dr.time}</p>`;
+            if(dr.fields) dr.fields.forEach(f => info += `<p><b>${f.label}:</b> ${f.value}</p>`);
+            document.getElementById('mInfo').innerHTML = info;
             document.getElementById('mWa').href = `https://wa.me/20${dr.wa}`;
-            document.getElementById('detailsModal').style.display = 'flex';
+            document.getElementById('modal').style.display = 'flex';
         }
 
-        function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
+        function resetDrForm() {
+            document.getElementById('drName').value=''; document.getElementById('editDrId').value='';
+            document.getElementById('drFile').value=''; document.getElementById('drWa').value='';
+            document.getElementById('dynamicFields').innerHTML='';
+            document.getElementById('drBtn').innerText = "حفظ بيانات الدكتور ✅";
+        }
+
+        function openAdmin() { if(prompt("كلمة السر:") === "1987") document.getElementById('adminPanel').style.display='block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display='none'; }
     </script>
 </body>
