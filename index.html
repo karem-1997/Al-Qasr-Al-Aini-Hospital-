@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - الإدارة المتكاملة</title>
+    <title id="pageTitle">نظام القصر الفرنسي - النسخة الاحترافية</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -12,57 +12,74 @@
         :root { --primary: #0284c7; --bg: #f0f9ff; --white: #ffffff; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; direction: rtl; }
         
-        .top-header { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 25px 20px; border-radius: 0 0 35px 35px; color: white; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .top-header { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 25px 20px; border-radius: 0 0 30px 30px; color: white; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .search-box { background: white; border-radius: 50px; display: flex; align-items: center; padding: 5px 15px; margin-top: 15px; max-width: 500px; margin-left: auto; margin-right: auto; }
         .search-box input { border: none; outline: none; width: 100%; padding: 10px; font-size: 14px; }
 
-        .main-container { padding: 20px 15px; margin-bottom: 80px; }
-        #pathDisplay { font-size: 13px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 15px; border-radius: 20px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .main-container { padding: 15px; margin-bottom: 80px; }
+        #pathDisplay { font-size: 12px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 12px; border-radius: 15px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: white; padding: 20px 10px; border-radius: 25px; text-align: center; cursor: pointer; box-shadow: 0 6px 0 #cbd5e1; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; transition: 0.1s; min-height: 120px; justify-content: center; }
-        .card:active { transform: translateY(3px); box-shadow: none; }
-        .card .icon-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 1px solid #eee; }
-        .card .icon-emoji { font-size: 40px; margin-bottom: 8px; }
-        .card .name { font-weight: bold; color: #0369a1; font-size: 14px; line-height: 1.4; }
+        /* تعديل حجم الكروت لترجع صغيرة ومتناسقة */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card { 
+            background: white; 
+            padding: 15px 10px; 
+            border-radius: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            box-shadow: 0 4px 0 #cbd5e1; 
+            border: 1px solid #e2e8f0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            transition: 0.1s; 
+            min-height: 100px; /* الحجم القديم المتناسق */
+        }
+        .card:active { transform: translateY(2px); box-shadow: none; }
+        
+        /* ضبط أحجام الأيقونات والصور داخل الكارت */
+        .card .icon-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
+        .card .icon-emoji { font-size: 32px; margin-bottom: 6px; }
+        .card .name { font-weight: bold; color: #0369a1; font-size: 13px; line-height: 1.2; }
 
-        .footer-info { text-align: center; padding: 20px; color: #64748b; font-size: 14px; margin-top: 30px; border-top: 1px dashed #cbd5e1; }
-        .fb-link { display: inline-block; margin-top: 10px; color: #1877f2; text-decoration: none; font-weight: bold; font-size: 20px; }
+        .footer-info { text-align: center; padding: 20px; color: #64748b; font-size: 13px; margin-top: 20px; border-top: 1px dashed #cbd5e1; }
+        .fb-link { display: inline-block; margin-top: 10px; color: #1877f2; text-decoration: none; font-weight: bold; font-size: 18px; }
 
         /* لوحة التحكم */
         #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 10001; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .admin-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
-        .nav-tab { padding: 10px 18px; background: #e2e8f0; border-radius: 50px; cursor: pointer; white-space: nowrap; font-weight: bold; font-size: 12px; }
+        .admin-nav { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
+        .nav-tab { padding: 8px 15px; background: #e2e8f0; border-radius: 50px; cursor: pointer; white-space: nowrap; font-weight: bold; font-size: 11px; }
         .nav-tab.active { background: var(--primary); color: white; }
-        .admin-section { display: none; background: white; padding: 15px; border-radius: 20px; border: 1px solid #e2e8f0; }
-        .admin-section.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .admin-section { display: none; background: white; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; }
+        .admin-section.active { display: block; }
 
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; box-sizing: border-box; }
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: #f1f5f9; padding: 12px; border-radius: 15px; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; box-sizing: border-box; }
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; background: #f1f5f9; padding: 10px; border-radius: 12px; }
         
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: #10b981; color: white; }
         .btn-red { background: #ef4444; color: white; }
 
-        .manage-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; background: #fff; margin-bottom: 8px; border-radius: 12px; }
-        .item-actions { display: flex; gap: 12px; }
-        .edit-btn { color: #f59e0b; font-weight: bold; cursor: pointer; }
-        .delete-btn { color: #ef4444; font-weight: bold; cursor: pointer; }
+        .manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f1f5f9; background: #fff; margin-bottom: 6px; border-radius: 10px; }
+        .item-actions { display: flex; gap: 10px; }
+        .edit-btn { color: #f59e0b; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .delete-btn { color: #ef4444; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 35px; overflow: hidden; position: relative; }
-        #modalImg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 25px auto 10px; display: block; }
-        .info-card { background: #f8fafc; padding: 12px; border-radius: 15px; margin: 8px 20px; border-right: 5px solid var(--primary); text-align: right; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; }
+        #modalImg { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 20px auto 10px; display: block; }
+        #modalEmoji { font-size: 70px; text-align: center; margin-top: 15px; }
+        .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; }
 
-        .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; opacity: 0.05; cursor: pointer; z-index: 10002; }
+        .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 40px; height: 40px; opacity: 0.05; cursor: pointer; z-index: 10002; }
     </style>
 </head>
 <body>
 
     <div class="top-header">
-        <h2 id="mainHeading">تحميل...</h2>
+        <h2 id="mainHeading" style="margin:0; font-size: 20px;">تحميل...</h2>
         <div class="search-box">
             <span>🔍</span>
             <input type="text" id="searchInput" placeholder="ابحث هنا..." oninput="handleSearch()">
@@ -72,7 +89,7 @@
     <div class="main-container">
         <span id="pathDisplay">الرئيسية</span>
         <div id="mainGrid" class="grid"></div>
-        <button id="backBtn" class="btn" style="display:none; background:#64748b; color:white; margin-top:20px;" onclick="goBack()">🔙 العودة للخلف</button>
+        <button id="backBtn" class="btn" style="display:none; background:#64748b; color:white; margin-top:15px;" onclick="goBack()">🔙 العودة للخلف</button>
     </div>
 
     <div class="footer-info">
@@ -83,17 +100,16 @@
     <div class="admin-trigger" onclick="openAdmin()">⚙️</div>
 
     <div id="adminPanel">
-        <h2 style="text-align:center; color:var(--primary);">لوحة التحكم الشاملة</h2>
+        <h3 style="text-align:center; color:var(--primary); margin-top:0;">لوحة التحكم</h3>
         
         <div class="admin-nav">
             <div class="nav-tab active" onclick="showSection('sec-settings')">⚙️ الإعدادات</div>
             <div class="nav-tab" onclick="showSection('sec-add-cat')">📦 الأقسام</div>
-            <div class="nav-tab" onclick="showSection('sec-add-dr')">👨‍⚕️ الأطباء والخدمات</div>
-            <div class="nav-tab" onclick="showSection('sec-manage')">📋 تعديل وحذف</div>
+            <div class="nav-tab" onclick="showSection('sec-add-dr')">👨‍⚕️ الأطباء/الخدمات</div>
+            <div class="nav-tab" onclick="showSection('sec-manage')">📋 إدارة البيانات</div>
         </div>
 
         <div id="sec-settings" class="admin-section active">
-            <h4>إعدادات الواجهة الرئيسية</h4>
             <input type="text" id="setMainTitle" placeholder="اسم المستشفى">
             <textarea id="setDesc" rows="2" placeholder="نص الدعاء بالأسفل"></textarea>
             <input type="text" id="setFbUrl" placeholder="رابط الفيسبوك">
@@ -101,9 +117,8 @@
         </div>
 
         <div id="sec-add-cat" class="admin-section">
-            <h4 id="catHeader">إضافة قسم</h4>
             <input type="hidden" id="editCatId">
-            <select id="catParent"><option value="root">-- الشاشة الرئيسية --</option></select>
+            <select id="catParent"><option value="root">-- الرئيسية --</option></select>
             <input type="text" id="catName" placeholder="اسم القسم">
             <select id="catIcon">
                 <option value="🏥">🏥 مستشفى</option><option value="🏢">🏢 عيادات</option>
@@ -113,62 +128,51 @@
                 <option value="🚑">🚑 طوارئ</option>
             </select>
             <button class="btn btn-blue" onclick="saveCategory()">حفظ القسم ✅</button>
-            <button class="btn btn-red" id="cancelCatEdit" style="display:none;" onclick="resetCatForm()">إلغاء</button>
+            <button class="btn btn-red" id="cancelCatEdit" style="display:none; margin-top:5px;" onclick="resetCatForm()">إلغاء</button>
         </div>
 
         <div id="sec-add-dr" class="admin-section">
-            <h4 id="drHeader">إضافة (طبيب أو خدمة)</h4>
             <input type="hidden" id="editDrId">
             <select id="drParent"></select>
-            <input type="text" id="drName" placeholder="الاسم (مثلاً: د. محمد أو أشعة رنين)">
-            
-            <div style="background: #f1f5f9; padding: 10px; border-radius: 12px; margin-bottom: 10px;">
-                <label style="font-size:12px; display:block; margin-bottom:5px;"><b>اختر الشكل (صورة أو إيموجي):</b></label>
-                <input type="file" id="drFile" accept="image/*" style="margin-bottom:5px;">
-                <p style="font-size:11px; margin:0 0 5px 0;">أو اختر إيموجي إذا لم ترفع صورة:</p>
+            <input type="text" id="drName" placeholder="الاسم (طبيب أو خدمة)">
+            <div style="background: #f1f5f9; padding: 8px; border-radius: 10px; margin-bottom: 8px;">
+                <label style="font-size:11px;">صورة لوجو:</label>
+                <input type="file" id="drFile" accept="image/*">
+                <label style="font-size:11px;">أو إيموجي:</label>
                 <select id="drEmoji">
-                    <option value="">-- بدون إيموجي (نص فقط) --</option>
-                    <option value="👨‍⚕️">👨‍⚕️ طبيب</option>
-                    <option value="👩‍⚕️">👩‍⚕️ طبيبة</option>
-                    <option value="🔬">🔬 أشعة/تحاليل</option>
-                    <option value="🩺">🩺 سماعة</option>
-                    <option value="💊">💊 دواء</option>
-                    <option value="💉">💉 حقنة</option>
-                    <option value="🏥">🏥 مبنى</option>
-                    <option value="🚑">🚑 إسعاف</option>
-                    <option value="✨">✨ مميز</option>
+                    <option value="">-- بدون --</option>
+                    <option value="👨‍⚕️">👨‍⚕️ طبيب</option><option value="🔬">🔬 خدمة</option>
+                    <option value="🩺">🩺 سماعة</option><option value="💊">💊 دواء</option>
                 </select>
             </div>
-
             <div class="time-grid">
-                <div><input type="text" id="tFrom" placeholder="من (9:00)"><select id="pFrom"><option>صباحاً</option><option>مساءً</option></select></div>
-                <div><input type="text" id="tTo" placeholder="إلى (11:00)"><select id="pTo"><option>مساءً</option><option>صباحاً</option></select></div>
+                <div><input type="text" id="tFrom" placeholder="من"><select id="pFrom"><option>صباحاً</option><option>مساءً</option></select></div>
+                <div><input type="text" id="tTo" placeholder="إلى"><select id="pTo"><option>مساءً</option><option>صباحاً</option></select></div>
             </div>
             <input type="text" id="drLoc" placeholder="رابط اللوكيشن">
             <div id="dynamicFields"></div>
-            <button class="btn" style="background:#6366f1; color:white; font-size:12px; margin-bottom:10px" onclick="addField()">➕ إضافة بيان (سعر، تخصص..)</button>
+            <button class="btn" style="background:#6366f1; color:white; font-size:11px; margin-bottom:8px" onclick="addField()">➕ إضافة بيان</button>
             <input type="text" id="drWa" placeholder="واتساب الحجز">
             <button class="btn btn-green" onclick="saveDoctor()">حفظ البيانات ✅</button>
-            <button class="btn btn-red" id="cancelDrEdit" style="display:none;" onclick="resetDrForm()">إلغاء</button>
+            <button class="btn btn-red" id="cancelDrEdit" style="display:none; margin-top:5px;" onclick="resetDrForm()">إلغاء</button>
         </div>
 
         <div id="sec-manage" class="admin-section">
-            <h4>إدارة البيانات</h4>
             <select id="filterSelect" onchange="syncAdminList()"></select>
-            <div id="manageList" style="margin-top:15px; border-top: 2px solid #eee; padding-top:10px;"></div>
+            <div id="manageList" style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;"></div>
         </div>
 
-        <button class="btn btn-red" style="margin-top:20px;" onclick="closeAdmin()">إغلاق</button>
+        <button class="btn btn-red" style="margin-top:15px;" onclick="closeAdmin()">إغلاق اللوحة</button>
     </div>
 
     <div id="modal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
             <img id="modalImg" src="" style="display:none;">
-            <div id="modalEmoji" style="font-size: 80px; text-align: center; margin-top: 20px; display: none;"></div>
-            <h3 id="mTitle" style="text-align:center; margin:15px 0; color:#0369a1;"></h3>
+            <div id="modalEmoji" style="display: none;"></div>
+            <h3 id="mTitle" style="text-align:center; margin:10px 0; color:#0369a1; font-size: 18px;"></h3>
             <div id="mInfo"></div>
-            <div style="padding:15px; display:flex; flex-direction:column; gap:8px;">
-                <a id="mLoc" href="#" class="btn btn-blue" style="text-decoration:none; display:none;" target="_blank">📍 عرض الموقع</a>
+            <div style="padding:12px; display:flex; flex-direction:column; gap:6px;">
+                <a id="mLoc" href="#" class="btn btn-blue" style="text-decoration:none; display:none;" target="_blank">📍 الموقع</a>
                 <a id="mWa" href="#" class="btn btn-green" style="text-decoration:none;" target="_blank">💬 حجز / استفسار</a>
             </div>
         </div>
@@ -234,11 +238,8 @@
             const d = document.createElement('div');
             d.className = 'card';
             let content = "";
-            if(imgUrl) {
-                content = `<img src="${imgUrl}" class="icon-img">`;
-            } else if(icon) {
-                content = `<div class="${isCat ? 'card .icon' : 'icon-emoji'}">${icon}</div>`;
-            }
+            if(imgUrl) content = `<img src="${imgUrl}" class="icon-img">`;
+            else if(icon) content = `<div class="${isCat ? 'icon-emoji' : 'icon-emoji'}">${icon}</div>`;
             d.innerHTML = `${content}<div class="name">${name}</div>`;
             d.onclick = clickFn;
             container.appendChild(d);
@@ -246,17 +247,10 @@
 
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name;
-            const mImg = document.getElementById('modalImg');
-            const mEmo = document.getElementById('modalEmoji');
-            
-            if(dr.img) {
-                mImg.src = dr.img; mImg.style.display = 'block'; mEmo.style.display = 'none';
-            } else if(dr.emoji) {
-                mEmo.innerText = dr.emoji; mEmo.style.display = 'block'; mImg.style.display = 'none';
-            } else {
-                mImg.style.display = 'none'; mEmo.style.display = 'none';
-            }
-
+            const mImg = document.getElementById('modalImg'), mEmo = document.getElementById('modalEmoji');
+            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmo.style.display = 'none'; }
+            else if(dr.emoji) { mEmo.innerText = dr.emoji; mEmo.style.display = 'block'; mImg.style.display = 'none'; }
+            else { mImg.style.display = 'none'; mEmo.style.display = 'none'; }
             let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br><span>${dr.time}</span></div>`;
             if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br><span>${f.value}</span></div>`);
             document.getElementById('mInfo').innerHTML = infoHtml;
@@ -281,7 +275,7 @@
             const fields = []; document.querySelectorAll('.f-row').forEach(row => fields.push({ label: row.querySelector('.f-l').value, value: row.querySelector('.f-v').value }));
             const timeStr = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
             const data = { name, parent: document.getElementById('drParent').value, wa: document.getElementById('drWa').value, loc: document.getElementById('drLoc').value, time: timeStr, fields, emoji: emoji || "" };
-            if(img) data.img = img; else if(id && !file) data.img = dataStore.drs[id].img || "";
+            if(img) data.img = img; else if(id) data.img = dataStore.drs[id].img || "";
             if(id) db.ref('hospital_v10_ultra/drs/'+id).set(data);
             else db.ref('hospital_v10_ultra/drs').push(data);
             alert("تم الحفظ!"); resetDrForm();
@@ -331,16 +325,13 @@
         }
 
         function del(t, id) { if(confirm("حذف نهائي؟")) db.ref(`hospital_v10_ultra/${t}/${id}`).remove(); }
-        
         function addField(l='', v='') {
             const div = document.createElement('div'); div.className = 'f-row'; div.style = "display:flex; gap:5px; margin-bottom:5px;";
             div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}">`;
             document.getElementById('dynamicFields').appendChild(div);
         }
-
         function resetCatForm() { document.getElementById('editCatId').value=''; document.getElementById('catName').value=''; document.getElementById('cancelCatEdit').style.display='none'; }
-        function resetDrForm() { document.getElementById('editDrId').value=''; document.getElementById('drName').value=''; document.getElementById('drEmoji').value=''; document.getElementById('cancelDrEdit').style.display='none'; document.getElementById('dynamicFields').innerHTML=''; }
-
+        function resetDrForm() { document.getElementById('editDrId').value=''; document.getElementById('drName').value=''; document.getElementById('cancelDrEdit').style.display='none'; document.getElementById('dynamicFields').innerHTML=''; }
         function handleSearch() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('mainGrid');
@@ -348,7 +339,6 @@
             Object.values(dataStore.cats||{}).forEach(c => { if(c.name.toLowerCase().includes(q)) createCard(grid, c.icon||'📂', c.name, () => { currentPath.push(c.name); render(); }, true); });
             Object.values(dataStore.drs||{}).forEach(d => { if(d.name.toLowerCase().includes(q)) createCard(grid, d.emoji || '', d.name, () => showDr(d), false, d.img); });
         }
-
         function goBack() { currentPath.pop(); render(); }
         function openAdmin() { if(prompt("الباسورد:") === "1987") document.getElementById('adminPanel').style.display='block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display='none'; }
