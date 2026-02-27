@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - النسخة الشاملة</title>
+    <title id="pageTitle">نظام القصر الفرنسي - النسخة النهائية</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -46,9 +46,8 @@
         
         .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; background: #f1f5f9; padding: 10px; border-radius: 12px; }
         .time-group { display: flex; gap: 4px; }
-        .time-group input { margin-bottom: 0; }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+        .btn { padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
@@ -57,14 +56,23 @@
         
         footer { background: #fff; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; margin-top: auto; }
         .footer-dua { font-style: italic; color: #64748b; font-size: 14px; margin-bottom: 10px; display: block; }
-        .social-link { color: #1877f2; text-decoration: none; font-weight: bold; }
 
+        /* تعديلات المودال والأزرار المصغرة */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; }
-        .modal-header-emoji { font-size: 55px; text-align: center; margin-top: 20px; }
-        #modalImg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 20px auto 10px; display: block; }
-        .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
+        .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .close-modal { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #64748b; cursor: pointer; z-index: 10; transition: 0.2s; }
+        .close-modal:hover { background: #ef4444; color: white; }
 
+        .modal-header-emoji { font-size: 55px; text-align: center; margin-top: 30px; }
+        #modalImg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 30px auto 10px; display: block; }
+        
+        /* الأزرار المصغرة في المودال */
+        .modal-actions { display: flex; justify-content: center; gap: 10px; padding: 15px; border-top: 1px solid #eee; margin-top: 10px; }
+        .btn-mini { flex: 1; font-size: 13px; padding: 10px 5px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
         .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 40px; height: 40px; opacity: 0.05; cursor: pointer; z-index: 10002; }
     </style>
 </head>
@@ -74,7 +82,7 @@
         <h2 id="mainHeading">تحميل...</h2>
         <div class="search-box">
             <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="ابحث هنا عن طبيب أو عيادة..." oninput="handleSearch()">
+            <input type="text" id="searchInput" placeholder="ابحث هنا..." oninput="handleSearch()">
         </div>
     </div>
 
@@ -82,7 +90,7 @@
         <span id="pathDisplay">الرئيسية</span>
         <div id="quickAddBtn" class="quick-add" onclick="openQuickAdd()">➕ إضافة عنصر جديد هنا</div>
         <div id="mainGrid" class="grid"></div>
-        <button id="backBtn" class="btn" style="display:none; background:#64748b; color:white; margin-top:15px;" onclick="goBack()">🔙 العودة للخلف</button>
+        <button id="backBtn" class="btn btn-blue" style="display:none; background:#64748b; margin-top:15px; width:100%" onclick="goBack()">🔙 العودة للخلف</button>
     </div>
 
     <footer id="footerArea">
@@ -98,56 +106,24 @@
             <input type="text" id="setMainTitle" placeholder="اسم المستشفى">
             <textarea id="setDua" placeholder="الدعاء في أسفل الصفحة"></textarea>
             <input type="text" id="setFb" placeholder="رابط الفيسبوك">
-            <button class="btn btn-blue" onclick="saveSettings()">حفظ الإعدادات 💾</button>
+            <button class="btn btn-blue" style="width:100%" onclick="saveSettings()">حفظ الإعدادات 💾</button>
         </div>
-
         <hr>
-        <h3 id="adminTaskTitle" style="text-align:center; color:var(--primary);">إدارة البيانات</h3>
-        
+        <h3 style="text-align:center; color:var(--primary);">إدارة البيانات</h3>
         <select id="itemType" onchange="toggleFormType()">
             <option value="dr">طبيب / خدمة تفصيلية</option>
             <option value="cat">قسم / مجلد رئيسي</option>
         </select>
-        
         <input type="text" id="itemName" placeholder="الاسم">
-
-        <label style="font-size: 12px; color: #64748b;">اختر الأيقونة (قائمة شاملة):</label>
         <select id="commonIcon">
-            <optgroup label="طبي وعيادات">
-                <option value="🏥">🏥 مستشفى</option>
-                <option value="👨‍⚕️">👨‍⚕️ دكتور (ذكر)</option>
-                <option value="👩‍⚕️">👩‍⚕️ دكتورة (أنثى)</option>
-                <option value="🦷">🦷 أسنان</option>
-                <option value="👁️">👁️ رمد / عيون</option>
-                <option value="🦴">🦴 عظام</option>
-                <option value="👶">👶 أطفال</option>
-                <option value="❤️">❤️ قلب</option>
-                <option value="👂">👂 أنف وأذن</option>
-                <option value="🔬">🔬 معمل تحاليل</option>
-                <option value="🚑">🚑 طوارئ</option>
-                <option value="🩺">🩺 سماعة</option>
-                <option value="💊">💊 صيدلية</option>
-                <option value="💉">💉 حقنة</option>
-                <option value="🧠">🧠 مخ وأعصاب</option>
-                <option value="🧴">🧴 جلدية</option>
-                <option value="🥗">🥗 تغذية</option>
-            </optgroup>
-            <optgroup label="أقسام عامة">
-                <option value="🏢">🏢 مبنى إداري</option>
-                <option value="📋">📋 كشف / فحص</option>
-                <option value="📍">📍 موقع</option>
-                <option value="📞">📞 تواصل</option>
-                <option value="⭐">⭐ مميز</option>
-                <option value="📅">📅 مواعيد</option>
-                <option value="🤝">🤝 خدمات</option>
-                <option value="ℹ️">ℹ️ معلومات</option>
+            <optgroup label="طبي">
+                <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option>
+                <option value="👩‍⚕️">👩‍⚕️ دكتورة</option><option value="🦷">🦷 أسنان</option>
+                <option value="🔬">🔬 معمل</option><option value="🚑">🚑 طوارئ</option>
             </optgroup>
         </select>
-        
         <div id="drOnly">
-            <label style="font-size:11px;">صورة اختيارية:</label>
             <input type="file" id="drFile" accept="image/*">
-            <label style="font-size: 12px;">المواعيد الرباعية:</label>
             <div class="time-grid">
                 <div class="time-group">
                     <input type="text" id="tFrom" placeholder="من">
@@ -158,28 +134,26 @@
                     <select id="pTo"><option>مساءً</option><option>صباحاً</option></select>
                 </div>
             </div>
-            <input type="text" id="drWa" placeholder="رقم واتساب الحجز">
-            <input type="text" id="drLoc" placeholder="رابط جوجل ماب">
+            <input type="text" id="drWa" placeholder="رقم الواتساب">
+            <input type="text" id="drLoc" placeholder="رابط الموقع">
             <div id="dynamicFields"></div>
-            <button class="btn" style="background:#6366f1; color:white; font-size:11px;" onclick="addField()">➕ إضافة حقل معلومة إضافية</button>
+            <button class="btn" style="background:#6366f1; color:white; font-size:11px; width:100%" onclick="addField()">➕ إضافة حقل جديد</button>
         </div>
-
         <input type="hidden" id="editId">
-        <input type="hidden" id="editType">
-        
-        <button class="btn btn-green" onclick="saveData()">حفظ البيانات ✅</button>
-        <button class="btn btn-red" onclick="closeAdmin()">إلغاء ❌</button>
+        <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="saveData()">حفظ ✅</button>
+        <button class="btn btn-red" style="width:100%; margin-top:5px;" onclick="closeAdmin()">إغلاق ❌</button>
     </div>
 
-    <div id="modal" class="modal" onclick="this.style.display='none'">
+    <div id="modal" class="modal" onclick="closeDrModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="close-modal" onclick="closeDrModal()">✕</div>
             <div id="modalEmojiHeader" class="modal-header-emoji"></div>
             <img id="modalImg" src="" style="display:none;">
             <h3 id="mTitle" style="text-align:center; color:#0369a1; margin:10px 0;"></h3>
             <div id="mInfo"></div>
-            <div style="padding:15px; display:flex; flex-direction:column; gap:8px;">
-                <a id="mLoc" href="#" class="btn btn-blue" style="text-decoration:none; display:none;" target="_blank">📍 موقع العيادة</a>
-                <a id="mWa" href="#" class="btn btn-green" style="text-decoration:none;" target="_blank">💬 حجز واتساب</a>
+            <div class="modal-actions">
+                <a id="mLoc" href="#" class="btn btn-mini btn-blue" target="_blank">📍 الموقع</a>
+                <a id="mWa" href="#" class="btn btn-mini btn-green" target="_blank">💬 واتساب</a>
             </div>
         </div>
     </div>
@@ -228,33 +202,39 @@
             container.appendChild(d);
         }
 
+        function showDr(dr) {
+            document.getElementById('mTitle').innerText = dr.name;
+            const mImg = document.getElementById('modalImg');
+            const mEmoji = document.getElementById('modalEmojiHeader');
+            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } 
+            else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
+            let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
+            if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br>${f.value}</div>`);
+            document.getElementById('mInfo').innerHTML = infoHtml;
+            document.getElementById('mWa').href = "https://wa.me/20" + dr.wa;
+            const mLoc = document.getElementById('mLoc');
+            if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'flex'; } else { mLoc.style.display = 'none'; }
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
+
         function updateGlobalSettings() {
             const s = dataStore.settings || {};
             document.getElementById('mainHeading').innerText = s.title || "مستشفى القصر الفرنسي";
             document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض";
             const fl = document.getElementById('footerLinks');
-            fl.innerHTML = s.fb ? `<a href="${s.fb}" class="social-link" target="_blank">تابعنا على فيسبوك 🔗</a>` : '';
+            fl.innerHTML = s.fb ? `<a href="${s.fb}" style="color:#1877f2; text-decoration:none; font-weight:bold;" target="_blank">فيسبوك 🔗</a>` : '';
         }
 
         function toggleSettings() {
             const f = document.getElementById('settingsFields');
             f.style.display = f.style.display === 'block' ? 'none' : 'block';
-            if(f.style.display === 'block') {
-                document.getElementById('setMainTitle').value = dataStore.settings?.title || '';
-                document.getElementById('setDua').value = dataStore.settings?.dua || '';
-                document.getElementById('setFb').value = dataStore.settings?.fb || '';
-            }
         }
 
         function saveSettings() {
-            const settings = {
-                title: document.getElementById('setMainTitle').value,
-                dua: document.getElementById('setDua').value,
-                fb: document.getElementById('setFb').value
-            };
-            db.ref(`${DATA_PATH}/settings`).set(settings).then(() => {
-                alert("تم الحفظ!"); toggleSettings();
-            });
+            const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value };
+            db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); });
         }
 
         function addField(l = '', v = '') {
@@ -266,11 +246,8 @@
         function startEdit(type, id) {
             const item = dataStore[type][id];
             document.getElementById('editId').value = id;
-            document.getElementById('editType').value = type;
             document.getElementById('itemName').value = item.name;
             document.getElementById('commonIcon').value = item.icon || '🏥';
-            document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
-            toggleFormType();
             if(type === 'drs') {
                 if(item.time) {
                     const pts = item.time.split(' ');
@@ -291,14 +268,11 @@
             const id = document.getElementById('editId').value;
             const type = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             const name = document.getElementById('itemName').value;
-            const icon = document.getElementById('commonIcon').value;
-            const parent = currentPath[currentPath.length - 1];
             if(!name) return;
-            let data = { name, parent, icon };
+            let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value };
             if(type === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value;
-                data.loc = document.getElementById('drLoc').value;
+                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
                 const flds = [];
                 document.querySelectorAll('.f-row').forEach(row => {
                     const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
@@ -312,21 +286,6 @@
             if(id) db.ref(`${DATA_PATH}/${type}/${id}`).update(data);
             else db.ref(`${DATA_PATH}/${type}`).push(data);
             closeAdmin();
-        }
-
-        function showDr(dr) {
-            document.getElementById('mTitle').innerText = dr.name;
-            const mImg = document.getElementById('modalImg');
-            const mEmoji = document.getElementById('modalEmojiHeader');
-            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } 
-            else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
-            let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
-            if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br>${f.value}</div>`);
-            document.getElementById('mInfo').innerHTML = infoHtml;
-            document.getElementById('mWa').href = "https://wa.me/20" + dr.wa;
-            const mLoc = document.getElementById('mLoc');
-            if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
-            document.getElementById('modal').style.display = 'flex';
         }
 
         function checkAdmin() {
