@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - العزل الكامل</title>
+    <title id="pageTitle">نظام القصر الفرنسي - العزل الاحترافي</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -17,7 +17,7 @@
         .search-box input { border: none; outline: none; width: 100%; padding: 10px; font-size: 14px; }
 
         .main-container { padding: 15px; flex: 1; margin-bottom: 20px; }
-        #pathDisplay { font-size: 12px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 12px; border-radius: 15px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #pathDisplay { font-size: 11px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 12px; border-radius: 15px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card { background: white; padding: 15px 10px; border-radius: 20px; text-align: center; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; min-height: 110px; position: relative; }
@@ -76,7 +76,7 @@
 
     <div class="main-container">
         <span id="pathDisplay">الرئيسية</span>
-        <div id="quickAddBtn" class="quick-add" onclick="openQuickAdd()">➕ إضافة عنصر جديد هنا</div>
+        <div id="quickAddBtn" class="quick-add" onclick="openQuickAdd()">➕ إضافة في هذا القسم حصراً</div>
         <div id="mainGrid" class="grid"></div>
         <button id="backBtn" class="btn btn-blue" style="display:none; background:#64748b; margin-top:15px; width:100%" onclick="goBack()">🔙 العودة للخلف</button>
     </div>
@@ -148,10 +148,9 @@
         const config = { apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0", databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
-        const DATA_PATH = 'hospital_v12_reset';
+        const DATA_PATH = 'hospital_isolated_v2'; // تم تغيير مسار الداتا لضمان العزل الجديد
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
-        // مصفوفة المسار لتوليد "المسار الفريد" لكل قسم
         let currentPath = ['root']; 
         let isAdminMode = false;
         let currentImgBase64 = "";
@@ -167,26 +166,31 @@
             if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
         });
 
+        // دالة لتوليد المعرف الفريد للمسار (العزل الحقيقي)
+        function getCurrentPathKey() {
+            return currentPath.join('|||'); 
+        }
+
         function render() {
             const grid = document.getElementById('mainGrid');
-            const parent = currentPath[currentPath.length - 1];
+            const pathKey = getCurrentPathKey();
             grid.innerHTML = '';
             
             document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
             document.getElementById('backBtn').style.display = currentPath.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
-            // نظام الفلترة المطلقة: لا يظهر العنصر إلا إذا كان الأب المباشر مطابقاً
+            // العزل القاتل: لا يظهر العنصر إلا إذا كان مفتاح المسار (PathKey) مطابقاً تماماً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if(c.parent === parent) {
+                    if(c.pathKey === pathKey) {
                         createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img);
                     }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if(d.parent === parent) {
+                    if(d.pathKey === pathKey) {
                         createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
                     }
                 });
@@ -209,9 +213,8 @@
             const name = document.getElementById('itemName').value;
             if(!name) return;
 
-            // الربط بالأب الحالي فقط
-            const parent = currentPath[currentPath.length - 1];
-            let data = { name, parent, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
+            const pathKey = getCurrentPathKey();
+            let data = { name, pathKey, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
 
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
@@ -233,7 +236,6 @@
             closeAdmin();
         }
 
-        // باقي الدوال للحفاظ على الخصائص
         function goBack() { if(currentPath.length > 1) { currentPath.pop(); render(); } }
         function startEdit(type, id) {
             resetForm(); const item = dataStore[type][id];
