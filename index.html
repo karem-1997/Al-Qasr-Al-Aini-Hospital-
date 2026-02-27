@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - النسخة الاحترافية الشاملة</title>
+    <title id="pageTitle">نظام القصر الفرنسي - الإدارة الشاملة</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -24,15 +24,15 @@
             background: white; padding: 15px 10px; border-radius: 20px; text-align: center; 
             cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.1s; min-height: 100px; position: relative;
+            transition: 0.1s; min-height: 110px; position: relative;
         }
         .card:active { transform: translateY(2px); box-shadow: none; }
-        .card .icon-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
-        .card .icon-emoji { font-size: 35px; margin-bottom: 6px; }
+        .card .icon-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
+        .card .icon-emoji { font-size: 38px; margin-bottom: 6px; }
         .card .name { font-weight: bold; color: #0369a1; font-size: 13px; line-height: 1.2; }
 
-        .admin-controls { display: none; position: absolute; top: 5px; left: 5px; right: 5px; justify-content: space-between; pointer-events: none; }
-        .admin-controls span { pointer-events: auto; background: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .admin-controls { display: none; position: absolute; top: 5px; left: 5px; right: 5px; justify-content: space-between; pointer-events: none; z-index: 5; }
+        .admin-controls span { pointer-events: auto; background: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; }
         .btn-del { color: #ef4444; border: 1px solid #ef4444; }
         .btn-edit { color: #f59e0b; border: 1px solid #f59e0b; }
         
@@ -58,16 +58,15 @@
         .footer-dua { font-style: italic; color: #64748b; font-size: 14px; margin-bottom: 10px; display: block; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; }
         
-        .close-modal { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #64748b; cursor: pointer; z-index: 10; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #64748b; cursor: pointer; }
 
         .modal-header-emoji { font-size: 55px; text-align: center; margin-top: 30px; }
         #modalImg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 30px auto 10px; display: block; }
         
         .modal-actions { display: flex; justify-content: center; gap: 10px; padding: 15px; border-top: 1px solid #eee; margin-top: 10px; }
-        .btn-mini { flex: 1; font-size: 13px; padding: 10px 5px; border-radius: 15px; text-decoration: none; }
+        .btn-mini { flex: 1; font-size: 13px; padding: 10px 5px; border-radius: 15px; text-decoration: none; text-align: center; font-weight: bold; }
 
         .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
         .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 40px; height: 40px; opacity: 0.05; cursor: pointer; z-index: 10002; }
@@ -79,7 +78,7 @@
         <h2 id="mainHeading">تحميل...</h2>
         <div class="search-box">
             <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="ابحث هنا..." oninput="handleSearch()">
+            <input type="text" id="searchInput" placeholder="ابحث هنا عن طبيب أو قسم..." oninput="handleSearch()">
         </div>
     </div>
 
@@ -107,7 +106,7 @@
         </div>
 
         <hr>
-        <h3 style="text-align:center; color:var(--primary);">إدارة العناصر</h3>
+        <h3 id="panelTitle" style="text-align:center; color:var(--primary);">إضافة عنصر جديد</h3>
         
         <select id="itemType" onchange="toggleFormType()">
             <option value="dr">طبيب / خدمة (كارت تفصيلي)</option>
@@ -116,24 +115,15 @@
         
         <input type="text" id="itemName" placeholder="الاسم الكامل">
 
-        <label style="font-size: 11px;">صورة (اختيارية - تظهر بدلاً من الإيموجي):</label>
+        <label style="font-size: 11px;">صورة اختيارية (تظهر مكان الإيموجي):</label>
         <input type="file" id="itemFile" accept="image/*">
 
-        <label style="font-size: 11px;">اختر إيموجي (قائمة ضخمة):</label>
+        <label style="font-size: 11px;">اختر إيموجي:</label>
         <select id="commonIcon">
-            <optgroup label="طبي ومستشفيات">
-                <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
-                <option value="🦷">🦷 أسنان</option><option value="👁️">👁️ رمد</option><option value="🦴">🦴 عظام</option>
-                <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🧠">🧠 مخ وأعصاب</option>
-                <option value="👂">👂 أنف وأذن</option><option value="🔬">🔬 معمل</option><option value="🚑">🚑 طوارئ</option>
-                <option value="💊">💊 صيدلية</option><option value="💉">💉 حقنة</option><option value="🩺">🩺 سماعة</option>
-            </optgroup>
-            <optgroup label="أخرى">
-                <option value="🏢">🏢 مبنى</option><option value="📍">📍 موقع</option><option value="📞">📞 تواصل</option>
-                <option value="⭐">⭐ مميز</option><option value="📅">📅 مواعيد</option><option value="📋">📋 كشف</option>
-                <option value="🤝">🤝 خدمات</option><option value="🆘">🆘 نجدة</option><option value="🏢">🏢 عيادات</option>
-                <option value="🤰">🤰 نساء وتوليد</option><option value="🚶">🚶 طبيعي</option><option value="🧖">🧖 جلدية</option>
-            </optgroup>
+            <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
+            <option value="🦷">🦷 أسنان</option><option value="👁️">👁️ رمد</option><option value="🦴">🦴 عظام</option>
+            <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🧠">🧠 مخ وأعصاب</option>
+            <option value="🏢">🏢 مبنى</option><option value="📍">📍 موقع</option><option value="⭐">⭐ مميز</option>
         </select>
         
         <div id="drOnly">
@@ -151,11 +141,13 @@
             <input type="text" id="drWa" placeholder="رقم واتساب الحجز">
             <input type="text" id="drLoc" placeholder="رابط جوجل ماب">
             <div id="dynamicFields"></div>
-            <button class="btn" style="background:#6366f1; color:white; font-size:11px; width:100%" onclick="addField()">➕ إضافة معلومة إضافية (سعر / تنبيه)</button>
+            <button class="btn" style="background:#6366f1; color:white; font-size:11px; width:100%" onclick="addField()">➕ إضافة حقل جديد</button>
         </div>
 
         <input type="hidden" id="editId">
-        <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="saveData()">حفظ العنصر ✅</button>
+        <input type="hidden" id="editTypeRef">
+        
+        <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="saveData()">حفظ البيانات ✅</button>
         <button class="btn btn-red" style="width:100%; margin-top:5px;" onclick="closeAdmin()">إلغاء ❌</button>
     </div>
 
@@ -167,8 +159,8 @@
             <h3 id="mTitle" style="text-align:center; color:#0369a1; margin:10px 0;"></h3>
             <div id="mInfo"></div>
             <div class="modal-actions">
-                <a id="mLoc" href="#" class="btn btn-mini btn-blue" target="_blank">📍 موقع العيادة</a>
-                <a id="mWa" href="#" class="btn btn-mini btn-green" target="_blank">💬 حجز واتساب</a>
+                <a id="mLoc" href="#" class="btn-mini btn-blue" target="_blank">📍 موقع العيادة</a>
+                <a id="mWa" href="#" class="btn-mini btn-green" target="_blank">💬 حجز واتساب</a>
             </div>
         </div>
     </div>
@@ -217,6 +209,74 @@
             container.appendChild(d);
         }
 
+        function startEdit(type, id) {
+            const item = dataStore[type][id];
+            document.getElementById('editId').value = id;
+            document.getElementById('editTypeRef').value = type;
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('commonIcon').value = item.icon || '🏥';
+            document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
+            toggleFormType();
+            if(type === 'drs') {
+                if(item.time) {
+                    const pts = item.time.split(' ');
+                    if(pts.length >= 6) {
+                        document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2];
+                        document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5];
+                    }
+                }
+                document.getElementById('drWa').value = item.wa || '';
+                document.getElementById('drLoc').value = item.loc || '';
+                document.getElementById('dynamicFields').innerHTML = '';
+                if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
+            }
+            document.getElementById('panelTitle').innerText = "تعديل العنصر";
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        function deleteItem(type, id) {
+            if(confirm("هل أنت متأكد من حذف هذا العنصر نهائياً؟")) {
+                db.ref(`${DATA_PATH}/${type}/${id}`).remove();
+            }
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const typeRef = document.getElementById('editTypeRef').value;
+            const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
+            const name = document.getElementById('itemName').value;
+            if(!name) return;
+
+            let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value };
+            
+            const file = document.getElementById('itemFile').files[0];
+            if(file) {
+                data.img = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
+            } else if(id && typeRef === newType) {
+                data.img = dataStore[typeRef][id].img || "";
+            }
+
+            if(newType === 'drs') {
+                data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
+                data.wa = document.getElementById('drWa').value;
+                data.loc = document.getElementById('drLoc').value;
+                const flds = [];
+                document.querySelectorAll('.f-row').forEach(row => {
+                    const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
+                    if(l && v) flds.push({ label: l, value: v });
+                });
+                data.fields = flds;
+            }
+
+            if(id) {
+                if(typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
+                db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
+            } else {
+                db.ref(`${DATA_PATH}/${newType}`).push(data);
+            }
+            closeAdmin();
+        }
+
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name;
             const mImg = document.getElementById('modalImg');
@@ -228,42 +288,8 @@
             document.getElementById('mInfo').innerHTML = infoHtml;
             document.getElementById('mWa').href = "https://wa.me/20" + dr.wa;
             const mLoc = document.getElementById('mLoc');
-            if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'flex'; } else { mLoc.style.display = 'none'; }
+            if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
-        }
-
-        function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
-
-        async function saveData() {
-            const id = document.getElementById('editId').value;
-            const type = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
-            const name = document.getElementById('itemName').value;
-            if(!name) return;
-            let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value };
-            
-            const file = document.getElementById('itemFile').files[0];
-            if(file) data.img = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
-            else if(id) data.img = dataStore[type][id].img || "";
-
-            if(type === 'drs') {
-                data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
-                const flds = [];
-                document.querySelectorAll('.f-row').forEach(row => {
-                    const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
-                    if(l && v) flds.push({ label: l, value: v });
-                });
-                data.fields = flds;
-            }
-            if(id) db.ref(`${DATA_PATH}/${type}/${id}`).update(data);
-            else db.ref(`${DATA_PATH}/${type}`).push(data);
-            closeAdmin();
-        }
-
-        function addField(l = '', v = '') {
-            const div = document.createElement('div'); div.className = 'f-row';
-            div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">✕</button>`;
-            document.getElementById('dynamicFields').appendChild(div);
         }
 
         function updateGlobalSettings() {
@@ -274,16 +300,22 @@
             fl.innerHTML = s.fb ? `<a href="${s.fb}" style="color:#1877f2; text-decoration:none; font-weight:bold;" target="_blank">فيسبوك المستشفى 🔗</a>` : '';
         }
 
-        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
-        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
         function checkAdmin() { if(isAdminMode) { isAdminMode = false; render(); return; } if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
         function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
-        function openQuickAdd() { document.getElementById('editId').value = ''; document.getElementById('adminPanel').style.display = 'block'; }
+        function openQuickAdd() { document.getElementById('editId').value = ''; document.getElementById('panelTitle').innerText = "إضافة عنصر جديد"; document.getElementById('adminPanel').style.display = 'block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+        function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
         function goBack() { currentPath.pop(); render(); }
-        function deleteItem(type, id) { if(confirm("حذف؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
-        function startEdit(type, id) { /* كود التعديل كما هو سابقاً */ }
-        function handleSearch() { /* كود البحث كما هو سابقاً */ }
+        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
+        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
+        function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
+        function handleSearch() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const grid = document.getElementById('mainGrid');
+            if(!q) { render(); return; } grid.innerHTML = '';
+            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
+            Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
+        }
     </script>
 </body>
 </html>
