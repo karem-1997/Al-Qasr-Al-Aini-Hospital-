@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - الفصل التام للأقسام</title>
+    <title id="pageTitle">نظام القصر الفرنسي - استعادة البيانات والعزل</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -101,25 +101,20 @@
         </div>
         <hr>
         <h3 id="panelTitle" style="text-align:center; color:var(--primary);">إضافة عنصر جديد</h3>
-        
         <select id="itemType" onchange="toggleFormType()">
             <option value="dr">طبيب / خدمة (كارت تفصيلي)</option>
             <option value="cat">قسم / مجلد (أيقونة فقط)</option>
         </select>
-        
         <input type="text" id="itemName" placeholder="الاسم الكامل">
-        
         <div class="img-container">
             <input type="file" id="itemFile" accept="image/*">
             <button type="button" class="btn-clear-img" onclick="clearImageInput()">حذف الصورة 🗑️</button>
         </div>
-
         <select id="commonIcon">
             <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
             <option value="🦷">🦷 أسنان</option><option value="👁️">👁️ رمد</option><option value="🦴">🦴 عظام</option>
             <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🏢">🏢 مبنى</option>
         </select>
-        
         <div id="drOnly">
             <div class="time-grid">
                 <div class="time-group"><input type="text" id="tFrom" placeholder="من"><select id="pFrom"><option>صباحاً</option><option>مساءً</option></select></div>
@@ -130,7 +125,6 @@
             <div id="dynamicFields"></div>
             <button class="btn" style="background:#6366f1; color:white; width:100%" onclick="addField()">➕ إضافة حقل جديد</button>
         </div>
-
         <input type="hidden" id="editId"><input type="hidden" id="editTypeRef">
         <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="saveData()">حفظ ✅</button>
         <button class="btn btn-red" style="width:100%; margin-top:5px;" onclick="closeAdmin()">إلغاء ❌</button>
@@ -157,9 +151,8 @@
         const DATA_PATH = 'hospital_v12_reset';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
-        // مصفوفة المسار تخزن معرفات (IDs) وليس الأسماء فقط لضمان دقة الفصل
-        let currentPathIds = ['root']; 
-        let currentPathNames = ['الرئيسية'];
+        // العودة لاستخدام "الأسماء" لضمان قراءة الداتا القديمة
+        let currentPath = ['root']; 
         let isAdminMode = false;
         let currentImgBase64 = "";
 
@@ -176,28 +169,24 @@
 
         function render() {
             const grid = document.getElementById('mainGrid');
-            const currentParentId = currentPathIds[currentPathIds.length - 1];
+            const parent = currentPath[currentPath.length - 1];
             grid.innerHTML = '';
             
-            document.getElementById('pathDisplay').innerText = currentPathNames.join(' > ');
-            document.getElementById('backBtn').style.display = currentPathIds.length > 1 ? 'block' : 'none';
+            document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
+            document.getElementById('backBtn').style.display = currentPath.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
-            // أهم جزء: تصفية العناصر بناءً على المجلد الأب الحالي فقط
+            // العودة لنظام الربط القديم (parent) لتعود الداتا القديمة فوراً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if(c.parentId === currentParentId) {
-                        createCard(grid, id, c.icon, c.name, () => { 
-                            currentPathIds.push(id); 
-                            currentPathNames.push(c.name); 
-                            render(); 
-                        }, 'cats', c.img);
+                    if((c.parent === parent) || (c.parentId === parent)) {
+                        createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img);
                     }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if(d.parentId === currentParentId) {
+                    if((d.parent === parent) || (d.parentId === parent)) {
                         createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
                     }
                 });
@@ -220,20 +209,12 @@
             const name = document.getElementById('itemName').value;
             if(!name) return;
 
-            // الحفاظ على الأب الحالي لضمان العزل
-            const parentId = currentPathIds[currentPathIds.length - 1];
-
-            let data = { 
-                name: name, 
-                parentId: parentId, 
-                icon: document.getElementById('commonIcon').value, 
-                img: currentImgBase64 
-            };
+            const parent = currentPath[currentPath.length - 1];
+            let data = { name: name, parent: parent, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
 
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value;
-                data.loc = document.getElementById('drLoc').value;
+                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
                 const flds = [];
                 document.querySelectorAll('.f-row').forEach(row => {
                     const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
@@ -251,15 +232,7 @@
             closeAdmin();
         }
 
-        function goBack() { 
-            if(currentPathIds.length > 1) {
-                currentPathIds.pop(); 
-                currentPathNames.pop(); 
-                render(); 
-            }
-        }
-
-        // باقي الدوال (resetForm, startEdit, deleteItem, etc.) تبقى كما هي مع تحديث مرجع parentId
+        function goBack() { if(currentPath.length > 1) { currentPath.pop(); render(); } }
         function startEdit(type, id) {
             resetForm(); const item = dataStore[type][id];
             document.getElementById('editId').value = id; document.getElementById('editTypeRef').value = type;
@@ -273,7 +246,6 @@
             }
             document.getElementById('adminPanel').style.display = 'block';
         }
-
         function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
         function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
         function checkAdmin() { if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
@@ -295,9 +267,9 @@
             const mLoc = document.getElementById('mLoc'); if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
         }
-        function handleSearch() { /* البحث يعرض من كل الداتا وهذا طبيعي للوصول السريع */
+        function handleSearch() {
             const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
-            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathIds.push(id); currentPathNames.push(c.name); render(); }, 'cats', c.img); });
+            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
             Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
         }
     </script>
