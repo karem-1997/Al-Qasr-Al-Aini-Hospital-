@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - الإدارة الشاملة</title>
+    <title id="pageTitle">نظام القصر الفرنسي - الإدارة الاحترافية</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -20,12 +20,7 @@
         #pathDisplay { font-size: 12px; color: var(--primary); font-weight: bold; margin-bottom: 15px; background: white; padding: 5px 12px; border-radius: 15px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .card { 
-            background: white; padding: 15px 10px; border-radius: 20px; text-align: center; 
-            cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.1s; min-height: 110px; position: relative;
-        }
+        .card { background: white; padding: 15px 10px; border-radius: 20px; text-align: center; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; min-height: 110px; position: relative; }
         .card:active { transform: translateY(2px); box-shadow: none; }
         .card .icon-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
         .card .icon-emoji { font-size: 38px; margin-bottom: 6px; }
@@ -52,24 +47,26 @@
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
         
-        .f-row { display: flex; gap: 5px; margin-bottom: 8px; }
-        
-        footer { background: #fff; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; margin-top: auto; }
-        .footer-dua { font-style: italic; color: #64748b; font-size: 14px; margin-bottom: 10px; display: block; }
+        /* زر الفيسبوك العائم */
+        .fb-float { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #1877f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; text-decoration: none; transition: 0.3s; }
+        .fb-float:active { transform: scale(0.9); }
+        .fb-float svg { width: 30px; height: 30px; fill: white; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; }
-        
         .close-modal { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #64748b; cursor: pointer; }
 
         .modal-header-emoji { font-size: 55px; text-align: center; margin-top: 30px; }
         #modalImg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); margin: 30px auto 10px; display: block; }
-        
         .modal-actions { display: flex; justify-content: center; gap: 10px; padding: 15px; border-top: 1px solid #eee; margin-top: 10px; }
         .btn-mini { flex: 1; font-size: 13px; padding: 10px 5px; border-radius: 15px; text-decoration: none; text-align: center; font-weight: bold; }
 
+        .f-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .img-container { position: relative; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .btn-clear-img { background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; }
+
         .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
-        .admin-trigger { position: fixed; bottom: 15px; left: 15px; width: 40px; height: 40px; opacity: 0.05; cursor: pointer; z-index: 10002; }
+        .admin-trigger { position: fixed; bottom: 20px; left: 20px; width: 40px; height: 40px; opacity: 0.1; cursor: pointer; z-index: 10002; }
     </style>
 </head>
 <body>
@@ -78,7 +75,7 @@
         <h2 id="mainHeading">تحميل...</h2>
         <div class="search-box">
             <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="ابحث هنا عن طبيب أو قسم..." oninput="handleSearch()">
+            <input type="text" id="searchInput" placeholder="ابحث هنا..." oninput="handleSearch()">
         </div>
     </div>
 
@@ -91,8 +88,11 @@
 
     <footer id="footerArea">
         <span class="footer-dua" id="footerDua">اللهم اشفِ كل مريض</span>
-        <div id="footerLinks"></div>
     </footer>
+
+    <a href="#" id="fbLink" class="fb-float" target="_blank" style="display:none;">
+        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </a>
 
     <div class="admin-trigger" onclick="checkAdmin()">⚙️</div>
 
@@ -115,8 +115,10 @@
         
         <input type="text" id="itemName" placeholder="الاسم الكامل">
 
-        <label style="font-size: 11px;">صورة اختيارية (تظهر مكان الإيموجي):</label>
-        <input type="file" id="itemFile" accept="image/*">
+        <div class="img-container">
+            <input type="file" id="itemFile" accept="image/*" style="margin-bottom:0">
+            <button type="button" class="btn-clear-img" onclick="clearImageInput()">حذف الصورة 🗑️</button>
+        </div>
 
         <label style="font-size: 11px;">اختر إيموجي:</label>
         <select id="commonIcon">
@@ -166,10 +168,7 @@
     </div>
 
     <script>
-        const config = {
-            apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0",
-            databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/"
-        };
+        const config = { apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0", databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
         const DATA_PATH = 'hospital_v12_reset';
@@ -177,12 +176,42 @@
         let dataStore = { cats: {}, drs: {}, settings: {} };
         let currentPath = ['root'];
         let isAdminMode = false;
+        let currentImgBase64 = "";
 
         db.ref(DATA_PATH).on('value', (s) => {
             dataStore = s.val() || { cats: {}, drs: {}, settings: {} };
             render();
             updateGlobalSettings();
         });
+
+        // تحويل الصورة لـ Base64 عند اختيار ملف
+        document.getElementById('itemFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { currentImgBase64 = ev.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearImageInput() {
+            document.getElementById('itemFile').value = "";
+            currentImgBase64 = "";
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = "";
+            document.getElementById('editTypeRef').value = "";
+            document.getElementById('itemName').value = "";
+            document.getElementById('itemFile').value = "";
+            currentImgBase64 = "";
+            document.getElementById('tFrom').value = "";
+            document.getElementById('tTo').value = "";
+            document.getElementById('drWa').value = "";
+            document.getElementById('drLoc').value = "";
+            document.getElementById('dynamicFields').innerHTML = "";
+            document.getElementById('panelTitle').innerText = "إضافة عنصر جديد";
+        }
 
         function render() {
             const grid = document.getElementById('mainGrid');
@@ -210,12 +239,14 @@
         }
 
         function startEdit(type, id) {
+            resetForm();
             const item = dataStore[type][id];
             document.getElementById('editId').value = id;
             document.getElementById('editTypeRef').value = type;
             document.getElementById('itemName').value = item.name;
             document.getElementById('commonIcon').value = item.icon || '🏥';
             document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
+            currentImgBase64 = item.img || "";
             toggleFormType();
             if(type === 'drs') {
                 if(item.time) {
@@ -227,17 +258,10 @@
                 }
                 document.getElementById('drWa').value = item.wa || '';
                 document.getElementById('drLoc').value = item.loc || '';
-                document.getElementById('dynamicFields').innerHTML = '';
                 if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
             }
             document.getElementById('panelTitle').innerText = "تعديل العنصر";
             document.getElementById('adminPanel').style.display = 'block';
-        }
-
-        function deleteItem(type, id) {
-            if(confirm("هل أنت متأكد من حذف هذا العنصر نهائياً؟")) {
-                db.ref(`${DATA_PATH}/${type}/${id}`).remove();
-            }
         }
 
         async function saveData() {
@@ -247,19 +271,11 @@
             const name = document.getElementById('itemName').value;
             if(!name) return;
 
-            let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value };
+            let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
             
-            const file = document.getElementById('itemFile').files[0];
-            if(file) {
-                data.img = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
-            } else if(id && typeRef === newType) {
-                data.img = dataStore[typeRef][id].img || "";
-            }
-
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value;
-                data.loc = document.getElementById('drLoc').value;
+                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
                 const flds = [];
                 document.querySelectorAll('.f-row').forEach(row => {
                     const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
@@ -269,7 +285,7 @@
             }
 
             if(id) {
-                if(typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
+                if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
                 db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
             } else {
                 db.ref(`${DATA_PATH}/${newType}`).push(data);
@@ -277,10 +293,27 @@
             closeAdmin();
         }
 
+        function updateGlobalSettings() {
+            const s = dataStore.settings || {};
+            document.getElementById('mainHeading').innerText = s.title || "مستشفى القصر الفرنسي";
+            document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض";
+            const fb = document.getElementById('fbLink');
+            if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; }
+        }
+
+        function checkAdmin() { if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
+        function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
+        function openQuickAdd() { resetForm(); document.getElementById('adminPanel').style.display = 'block'; }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
+        function deleteItem(type, id) { if(confirm("حذف نهائي؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
+        function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
+        function goBack() { currentPath.pop(); render(); }
+        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
+        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم!"); toggleSettings(); }); }
+        function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name;
-            const mImg = document.getElementById('modalImg');
-            const mEmoji = document.getElementById('modalEmojiHeader');
+            const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
             if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } 
             else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
             let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
@@ -291,27 +324,8 @@
             if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
         }
-
-        function updateGlobalSettings() {
-            const s = dataStore.settings || {};
-            document.getElementById('mainHeading').innerText = s.title || "مستشفى القصر الفرنسي";
-            document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض";
-            const fl = document.getElementById('footerLinks');
-            fl.innerHTML = s.fb ? `<a href="${s.fb}" style="color:#1877f2; text-decoration:none; font-weight:bold;" target="_blank">فيسبوك المستشفى 🔗</a>` : '';
-        }
-
-        function checkAdmin() { if(isAdminMode) { isAdminMode = false; render(); return; } if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
-        function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
-        function openQuickAdd() { document.getElementById('editId').value = ''; document.getElementById('panelTitle').innerText = "إضافة عنصر جديد"; document.getElementById('adminPanel').style.display = 'block'; }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
-        function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
-        function goBack() { currentPath.pop(); render(); }
-        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
-        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
-        function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
         function handleSearch() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const grid = document.getElementById('mainGrid');
+            const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid');
             if(!q) { render(); return; } grid.innerHTML = '';
             Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
             Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
