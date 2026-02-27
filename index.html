@@ -47,7 +47,6 @@
         .btn-red { background: #ef4444; color: white; }
         .btn-green { background: #10b981; color: white; }
         
-        /* زر الفيسبوك العائم */
         .fb-float { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #1877f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; text-decoration: none; transition: 0.3s; }
         .fb-float:active { transform: scale(0.9); }
         .fb-float svg { width: 30px; height: 30px; fill: white; }
@@ -64,6 +63,10 @@
         .f-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .img-container { position: relative; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .btn-clear-img { background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; }
+
+        /* تعديل جملة الدعاء لتتوسط الشاشة بالكامل */
+        footer { background: transparent; padding: 30px 20px; text-align: center; margin-top: auto; width: 100%; box-sizing: border-box; }
+        .footer-dua { font-style: italic; color: #64748b; font-size: 15px; font-weight: 500; display: block; margin: 0 auto; max-width: 80%; line-height: 1.5; }
 
         .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
         .admin-trigger { position: fixed; bottom: 20px; left: 20px; width: 40px; height: 40px; opacity: 0.1; cursor: pointer; z-index: 10002; }
@@ -104,22 +107,17 @@
             <input type="text" id="setFb" placeholder="رابط الفيسبوك">
             <button class="btn btn-blue" style="width:100%" onclick="saveSettings()">حفظ الإعدادات 💾</button>
         </div>
-
         <hr>
         <h3 id="panelTitle" style="text-align:center; color:var(--primary);">إضافة عنصر جديد</h3>
-        
         <select id="itemType" onchange="toggleFormType()">
             <option value="dr">طبيب / خدمة (كارت تفصيلي)</option>
             <option value="cat">قسم / مجلد (أيقونة فقط)</option>
         </select>
-        
         <input type="text" id="itemName" placeholder="الاسم الكامل">
-
         <div class="img-container">
             <input type="file" id="itemFile" accept="image/*" style="margin-bottom:0">
             <button type="button" class="btn-clear-img" onclick="clearImageInput()">حذف الصورة 🗑️</button>
         </div>
-
         <label style="font-size: 11px;">اختر إيموجي:</label>
         <select id="commonIcon">
             <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
@@ -127,28 +125,17 @@
             <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🧠">🧠 مخ وأعصاب</option>
             <option value="🏢">🏢 مبنى</option><option value="📍">📍 موقع</option><option value="⭐">⭐ مميز</option>
         </select>
-        
         <div id="drOnly">
-            <label style="font-size: 12px;">المواعيد الرباعية:</label>
             <div class="time-grid">
-                <div class="time-group">
-                    <input type="text" id="tFrom" placeholder="من">
-                    <select id="pFrom"><option>صباحاً</option><option>مساءً</option></select>
-                </div>
-                <div class="time-group">
-                    <input type="text" id="tTo" placeholder="إلى">
-                    <select id="pTo"><option>مساءً</option><option>صباحاً</option></select>
-                </div>
+                <div class="time-group"><input type="text" id="tFrom" placeholder="من"><select id="pFrom"><option>صباحاً</option><option>مساءً</option></select></div>
+                <div class="time-group"><input type="text" id="tTo" placeholder="إلى"><select id="pTo"><option>مساءً</option><option>صباحاً</option></select></div>
             </div>
             <input type="text" id="drWa" placeholder="رقم واتساب الحجز">
             <input type="text" id="drLoc" placeholder="رابط جوجل ماب">
             <div id="dynamicFields"></div>
             <button class="btn" style="background:#6366f1; color:white; font-size:11px; width:100%" onclick="addField()">➕ إضافة حقل جديد</button>
         </div>
-
-        <input type="hidden" id="editId">
-        <input type="hidden" id="editTypeRef">
-        
+        <input type="hidden" id="editId"><input type="hidden" id="editTypeRef">
         <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="saveData()">حفظ البيانات ✅</button>
         <button class="btn btn-red" style="width:100%; margin-top:5px;" onclick="closeAdmin()">إلغاء ❌</button>
     </div>
@@ -184,7 +171,6 @@
             updateGlobalSettings();
         });
 
-        // تحويل الصورة لـ Base64 عند اختيار ملف
         document.getElementById('itemFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(file) {
@@ -194,102 +180,51 @@
             }
         });
 
-        function clearImageInput() {
-            document.getElementById('itemFile').value = "";
-            currentImgBase64 = "";
-        }
-
-        function resetForm() {
-            document.getElementById('editId').value = "";
-            document.getElementById('editTypeRef').value = "";
-            document.getElementById('itemName').value = "";
-            document.getElementById('itemFile').value = "";
-            currentImgBase64 = "";
-            document.getElementById('tFrom').value = "";
-            document.getElementById('tTo').value = "";
-            document.getElementById('drWa').value = "";
-            document.getElementById('drLoc').value = "";
-            document.getElementById('dynamicFields').innerHTML = "";
-            document.getElementById('panelTitle').innerText = "إضافة عنصر جديد";
-        }
-
+        function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
+        function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; document.getElementById('panelTitle').innerText = "إضافة عنصر جديد"; }
         function render() {
-            const grid = document.getElementById('mainGrid');
-            const parent = currentPath[currentPath.length - 1];
-            grid.innerHTML = '';
+            const grid = document.getElementById('mainGrid'); const parent = currentPath[currentPath.length - 1]; grid.innerHTML = '';
             document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
             document.getElementById('backBtn').style.display = currentPath.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
-
-            if(dataStore.cats) Object.entries(dataStore.cats).forEach(([id, c]) => {
-                if(c.parent === parent) createCard(grid, id, c.icon || '🏢', c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img);
-            });
-            if(dataStore.drs) Object.entries(dataStore.drs).forEach(([id, d]) => {
-                if(d.parent === parent) createCard(grid, id, d.icon || '👨‍⚕️', d.name, () => showDr(d), 'drs', d.img);
-            });
+            if(dataStore.cats) Object.entries(dataStore.cats).forEach(([id, c]) => { if(c.parent === parent) createCard(grid, id, c.icon || '🏢', c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
+            if(dataStore.drs) Object.entries(dataStore.drs).forEach(([id, d]) => { if(d.parent === parent) createCard(grid, id, d.icon || '👨‍⚕️', d.name, () => showDr(d), 'drs', d.img); });
         }
 
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
             let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
             let controls = isAdminMode ? `<div class="admin-controls" style="display:flex;"><span class="btn-edit" onclick="event.stopPropagation(); startEdit('${type}', '${id}')">✏️</span><span class="btn-del" onclick="event.stopPropagation(); deleteItem('${type}', '${id}')">❌</span></div>` : '';
-            d.innerHTML = `${controls}${content}<div class="name">${name}</div>`;
-            d.onclick = clickFn;
-            container.appendChild(d);
+            d.innerHTML = `${controls}${content}<div class="name">${name}</div>`; d.onclick = clickFn; container.appendChild(d);
         }
 
         function startEdit(type, id) {
-            resetForm();
-            const item = dataStore[type][id];
-            document.getElementById('editId').value = id;
-            document.getElementById('editTypeRef').value = type;
-            document.getElementById('itemName').value = item.name;
-            document.getElementById('commonIcon').value = item.icon || '🏥';
+            resetForm(); const item = dataStore[type][id];
+            document.getElementById('editId').value = id; document.getElementById('editTypeRef').value = type;
+            document.getElementById('itemName').value = item.name; document.getElementById('commonIcon').value = item.icon || '🏥';
             document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
-            currentImgBase64 = item.img || "";
-            toggleFormType();
+            currentImgBase64 = item.img || ""; toggleFormType();
             if(type === 'drs') {
-                if(item.time) {
-                    const pts = item.time.split(' ');
-                    if(pts.length >= 6) {
-                        document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2];
-                        document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5];
-                    }
-                }
-                document.getElementById('drWa').value = item.wa || '';
-                document.getElementById('drLoc').value = item.loc || '';
+                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2]; document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5]; } }
+                document.getElementById('drWa').value = item.wa || ''; document.getElementById('drLoc').value = item.loc || '';
                 if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
             }
-            document.getElementById('panelTitle').innerText = "تعديل العنصر";
-            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('panelTitle').innerText = "تعديل العنصر"; document.getElementById('adminPanel').style.display = 'block';
         }
 
         async function saveData() {
-            const id = document.getElementById('editId').value;
-            const typeRef = document.getElementById('editTypeRef').value;
+            const id = document.getElementById('editId').value; const typeRef = document.getElementById('editTypeRef').value;
             const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
-            const name = document.getElementById('itemName').value;
-            if(!name) return;
-
+            const name = document.getElementById('itemName').value; if(!name) return;
             let data = { name, parent: currentPath[currentPath.length - 1], icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
-            
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
                 data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
-                const flds = [];
-                document.querySelectorAll('.f-row').forEach(row => {
-                    const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
-                    if(l && v) flds.push({ label: l, value: v });
-                });
+                const flds = []; document.querySelectorAll('.f-row').forEach(row => { const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value; if(l && v) flds.push({ label: l, value: v }); });
                 data.fields = flds;
             }
-
-            if(id) {
-                if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
-                db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
-            } else {
-                db.ref(`${DATA_PATH}/${newType}`).push(data);
-            }
+            if(id) { if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove(); db.ref(`${DATA_PATH}/${newType}/${id}`).update(data); }
+            else { db.ref(`${DATA_PATH}/${newType}`).push(data); }
             closeAdmin();
         }
 
@@ -297,8 +232,7 @@
             const s = dataStore.settings || {};
             document.getElementById('mainHeading').innerText = s.title || "مستشفى القصر الفرنسي";
             document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض";
-            const fb = document.getElementById('fbLink');
-            if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; }
+            const fb = document.getElementById('fbLink'); if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; }
         }
 
         function checkAdmin() { if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
@@ -312,21 +246,16 @@
         function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم!"); toggleSettings(); }); }
         function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="البيان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="التفاصيل" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
         function showDr(dr) {
-            document.getElementById('mTitle').innerText = dr.name;
-            const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
-            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } 
-            else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
+            document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
+            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
             let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
             if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br>${f.value}</div>`);
-            document.getElementById('mInfo').innerHTML = infoHtml;
-            document.getElementById('mWa').href = "https://wa.me/20" + dr.wa;
-            const mLoc = document.getElementById('mLoc');
-            if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
+            document.getElementById('mInfo').innerHTML = infoHtml; document.getElementById('mWa').href = "https://wa.me/20" + dr.wa;
+            const mLoc = document.getElementById('mLoc'); if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
         }
         function handleSearch() {
-            const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid');
-            if(!q) { render(); return; } grid.innerHTML = '';
+            const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
             Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
             Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
         }
