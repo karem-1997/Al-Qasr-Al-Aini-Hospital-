@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - العزل الشجري الكامل</title>
+    <title id="pageTitle">نظام القصر الفرنسي - العزل الرقمي النهائي</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -51,7 +51,7 @@
         .fb-float svg { width: 30px; height: 30px; fill: white; }
 
         footer { background: transparent; padding: 30px 20px; text-align: center; margin-top: auto; width: 100%; box-sizing: border-box; }
-        .footer-dua { font-style: italic; color: #64748b; font-size: 15px; font-weight: 500; display: block; margin: 0 auto; max-width: 80%; line-height: 1.5; }
+        .footer-dua { font-style: italic; color: #64748b; font-size: 15px; font-weight: 500; display: block; margin: 0 auto; max-width: 80%; line-height: 1.5; text-align: center; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 30px; overflow: hidden; position: relative; padding-bottom: 20px; }
@@ -72,8 +72,8 @@
     </div>
 
     <div class="main-container">
-        <span id="pathDisplay">الرئيسية</span>
-        <div id="quickAddBtn" class="quick-add" onclick="openQuickAdd()">➕ إضافة (داخل هذا القسم فقط)</div>
+        <div id="pathDisplay">الرئيسية</div>
+        <div id="quickAddBtn" class="quick-add" onclick="openQuickAdd()">➕ إضافة في هذا القسم حصراً</div>
         <div id="mainGrid" class="grid"></div>
         <button id="backBtn" class="btn btn-blue" style="display:none; background:#64748b; margin-top:15px; width:100%" onclick="goBack()">🔙 العودة للخلف</button>
     </div>
@@ -105,7 +105,7 @@
         <input type="text" id="itemName" placeholder="الاسم">
         <div class="img-container">
             <input type="file" id="itemFile" accept="image/*">
-            <button type="button" style="padding:5px; color:red" onclick="clearImageInput()">حذف الصورة 🗑️</button>
+            <button type="button" style="color:red" onclick="clearImageInput()">حذف الصورة 🗑️</button>
         </div>
         <select id="commonIcon">
             <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
@@ -135,8 +135,8 @@
             <h3 id="mTitle" style="text-align:center; color:#0369a1;"></h3>
             <div id="mInfo"></div>
             <div class="modal-actions" style="display:flex; gap:10px; padding:15px;">
-                <a id="mLoc" href="#" class="btn btn-blue" style="flex:1; font-size:12px;" target="_blank">📍 الموقع</a>
-                <a id="mWa" href="#" class="btn btn-green" style="flex:1; font-size:12px;" target="_blank">💬 واتساب</a>
+                <a id="mLoc" href="#" class="btn btn-blue" style="flex:1" target="_blank">📍 الموقع</a>
+                <a id="mWa" href="#" class="btn btn-green" style="flex:1" target="_blank">💬 واتساب</a>
             </div>
         </div>
     </div>
@@ -145,10 +145,11 @@
         const config = { apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0", databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
-        const DATA_PATH = 'hospital_tree_final'; // مسار جديد لضمان العزل التام
+        const DATA_PATH = 'hospital_extreme_isolation_v1';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
-        let currentPath = ['root']; 
+        // مصفوفة لتخزين الـ IDs الفريدة للمسار الحالي
+        let currentPathNodes = [{ id: 'root', name: 'الرئيسية' }]; 
         let isAdminMode = false;
         let currentImgBase64 = "";
 
@@ -163,29 +164,27 @@
             if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
         });
 
-        // أهم دالة: توليد بصمة فريدة لكل مستوى في الشجرة
-        function getPathID() { return currentPath.join(' > '); }
-
         function render() {
             const grid = document.getElementById('mainGrid');
-            const currentLevelID = getPathID();
+            const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             grid.innerHTML = '';
             
-            document.getElementById('pathDisplay').innerText = currentPath.join(' > ').replace('root', 'الرئيسية');
-            document.getElementById('backBtn').style.display = currentPath.length > 1 ? 'block' : 'none';
+            // تحديث شريط المسار والأسماء
+            document.getElementById('pathDisplay').innerText = currentPathNodes.map(n => n.name).join(' > ');
+            document.getElementById('backBtn').style.display = currentPathNodes.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
-            // تصفية العناصر: تظهر فقط إذا كانت تنتمي لنفس "بصمة المسار"
+            // العزل المطلق: البحث بالـ ParentID الرقمي الفريد حصراً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if(c.belongsTo === currentLevelID) {
-                        createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img);
+                    if(c.parentId === parentID) {
+                        createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img);
                     }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if(d.belongsTo === currentLevelID) {
+                    if(d.parentId === parentID) {
                         createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
                     }
                 });
@@ -208,8 +207,8 @@
             const name = document.getElementById('itemName').value;
             if(!name) return;
 
-            const belongsTo = getPathID();
-            let data = { name, belongsTo, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
+            const parentID = currentPathNodes[currentPathNodes.length - 1].id;
+            let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
 
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
@@ -231,8 +230,8 @@
             closeAdmin();
         }
 
-        function goBack() { if(currentPath.length > 1) { currentPath.pop(); render(); } }
-        
+        function goBack() { if(currentPathNodes.length > 1) { currentPathNodes.pop(); render(); } }
+
         function startEdit(type, id) {
             resetForm(); const item = dataStore[type][id];
             document.getElementById('editId').value = id; document.getElementById('editTypeRef').value = type;
@@ -240,13 +239,7 @@
             document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
             currentImgBase64 = item.img || ""; toggleFormType();
             if(type === 'drs') {
-                if(item.time) { 
-                    const pts = item.time.split(' '); 
-                    if(pts.length >= 6) { 
-                        document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2]; 
-                        document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5]; 
-                    } 
-                }
+                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2]; document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5]; } }
                 document.getElementById('drWa').value = item.wa || ''; document.getElementById('drLoc').value = item.loc || '';
                 if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
             }
@@ -255,24 +248,18 @@
 
         function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
         function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
-        function checkAdmin() { if(prompt("باسورد الإدارة:") === "1987") { isAdminMode = true; render(); } }
+        function checkAdmin() { if(prompt("كلمة سر الإدارة:") === "1987") { isAdminMode = true; render(); } }
         function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
         function openQuickAdd() { resetForm(); document.getElementById('adminPanel').style.display = 'block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
-        function deleteItem(type, id) { if(confirm("هل أنت متأكد من الحذف؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
+        function deleteItem(type, id) { if(confirm("حذف نهائي؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
         function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
-        
-        function addField(l = '', v = '') { 
-            const div = document.createElement('div'); div.className = 'f-row'; 
-            div.style.display = "flex"; div.style.gap = "5px"; div.style.marginBottom = "5px";
-            div.innerHTML = `<input type="text" placeholder="العنوان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="القيمة" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none;">✕</button>`; 
-            document.getElementById('dynamicFields').appendChild(div); 
-        }
+        function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="العنوان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="القيمة" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
 
         function updateGlobalSettings() { 
             const s = dataStore.settings || {}; 
             document.getElementById('mainHeading').innerText = s.title || "المستشفى"; 
-            document.getElementById('footerDua').innerText = s.dua || ""; 
+            document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض"; 
             const fb = document.getElementById('fbLink'); 
             if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
         }
@@ -293,11 +280,8 @@
         }
 
         function handleSearch() {
-            const q = document.getElementById('searchInput').value.toLowerCase(); 
-            const grid = document.getElementById('mainGrid'); 
-            if(!q) { render(); return; } 
-            grid.innerHTML = '';
-            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img); });
+            const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
+            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); });
             Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
         }
     </script>
