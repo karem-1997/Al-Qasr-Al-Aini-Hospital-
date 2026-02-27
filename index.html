@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - استعادة البيانات والعزل</title>
+    <title id="pageTitle">نظام القصر الفرنسي - العزل الكامل</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -151,7 +151,7 @@
         const DATA_PATH = 'hospital_v12_reset';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
-        // العودة لاستخدام "الأسماء" لضمان قراءة الداتا القديمة
+        // مصفوفة المسار لتوليد "المسار الفريد" لكل قسم
         let currentPath = ['root']; 
         let isAdminMode = false;
         let currentImgBase64 = "";
@@ -176,17 +176,17 @@
             document.getElementById('backBtn').style.display = currentPath.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
-            // العودة لنظام الربط القديم (parent) لتعود الداتا القديمة فوراً
+            // نظام الفلترة المطلقة: لا يظهر العنصر إلا إذا كان الأب المباشر مطابقاً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if((c.parent === parent) || (c.parentId === parent)) {
+                    if(c.parent === parent) {
                         createCard(grid, id, c.icon, c.name, () => { currentPath.push(c.name); render(); }, 'cats', c.img);
                     }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if((d.parent === parent) || (d.parentId === parent)) {
+                    if(d.parent === parent) {
                         createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
                     }
                 });
@@ -209,8 +209,9 @@
             const name = document.getElementById('itemName').value;
             if(!name) return;
 
+            // الربط بالأب الحالي فقط
             const parent = currentPath[currentPath.length - 1];
-            let data = { name: name, parent: parent, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
+            let data = { name, parent, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
 
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
@@ -232,6 +233,7 @@
             closeAdmin();
         }
 
+        // باقي الدوال للحفاظ على الخصائص
         function goBack() { if(currentPath.length > 1) { currentPath.pop(); render(); } }
         function startEdit(type, id) {
             resetForm(); const item = dataStore[type][id];
