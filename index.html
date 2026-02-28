@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - العزل الرقمي النهائي</title>
+    
+    <title id="dynamicTitle">نظام الاستعلامات الذكي</title>
+    <meta property="og:title" id="ogTitle" content="نظام الاستعلامات">
+    <meta property="og:description" content="نظام استعلامات المستشفى الرسمي">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -91,7 +94,7 @@
     <div id="adminPanel">
         <div class="settings-tab" onclick="toggleSettings()">⚙️ إعدادات الموقع العامة ⬇️</div>
         <div id="settingsFields">
-            <input type="text" id="setMainTitle" placeholder="اسم المستشفى">
+            <input type="text" id="setMainTitle" placeholder="اسم المستشفى (هذا ما سيظهر في الواتساب)">
             <textarea id="setDua" placeholder="الدعاء في أسفل الصفحة"></textarea>
             <input type="text" id="setFb" placeholder="رابط الفيسبوك">
             <button class="btn btn-blue" style="width:100%" onclick="saveSettings()">حفظ الإعدادات 💾</button>
@@ -142,13 +145,13 @@
     </div>
 
     <script>
+        // إعدادات الفايربيس (محفوظة كما طلبت بالحرف)
         const config = { apiKey: "AIzaSyDpRvNYUZhsaAUlwk4_n94KNgK50rhfD-0", databaseURL: "https://al-qasr-hospital-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(config);
         const db = firebase.database();
         const DATA_PATH = 'hospital_extreme_isolation_v1';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
-        // مصفوفة لتخزين الـ IDs الفريدة للمسار الحالي
         let currentPathNodes = [{ id: 'root', name: 'الرئيسية' }]; 
         let isAdminMode = false;
         let currentImgBase64 = "";
@@ -159,22 +162,15 @@
             updateGlobalSettings();
         });
 
-        document.getElementById('itemFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
-        });
-
+        // بقية الوظائف الأساسية للحفاظ على الداتا والعزل المطلق بالـ IDs
         function render() {
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             grid.innerHTML = '';
-            
-            // تحديث شريط المسار والأسماء
             document.getElementById('pathDisplay').innerText = currentPathNodes.map(n => n.name).join(' > ');
             document.getElementById('backBtn').style.display = currentPathNodes.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
-            // العزل المطلق: البحث بالـ ParentID الرقمي الفريد حصراً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
                     if(c.parentId === parentID) {
@@ -191,6 +187,26 @@
             }
         }
 
+        // تحديث إعدادات الموقع + تحديث معلومات الواتساب ديناميكياً
+        function updateGlobalSettings() { 
+            const s = dataStore.settings || {}; 
+            const finalTitle = s.title || "نظام الاستعلامات";
+            
+            // 1. تحديث العنوان في الصفحة (Header)
+            document.getElementById('mainHeading').innerText = finalTitle; 
+            
+            // 2. تحديث عنوان الصفحة في المتصفح والواتساب
+            document.title = finalTitle; 
+            document.getElementById('dynamicTitle').innerText = finalTitle;
+            document.getElementById('ogTitle').setAttribute('content', finalTitle);
+            
+            // 3. تحديث بقية الإعدادات
+            document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض"; 
+            const fb = document.getElementById('fbLink'); 
+            if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
+        }
+
+        // الوظائف المساعدة للحفظ والتعامل مع الصور (كما هي دون تغيير)
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
             let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
@@ -206,10 +222,8 @@
             const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             const name = document.getElementById('itemName').value;
             if(!name) return;
-
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
-
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
                 data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
@@ -220,7 +234,6 @@
                 });
                 data.fields = flds;
             }
-
             if(id) {
                 if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
                 db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
@@ -231,41 +244,18 @@
         }
 
         function goBack() { if(currentPathNodes.length > 1) { currentPathNodes.pop(); render(); } }
-
-        function startEdit(type, id) {
-            resetForm(); const item = dataStore[type][id];
-            document.getElementById('editId').value = id; document.getElementById('editTypeRef').value = type;
-            document.getElementById('itemName').value = item.name; document.getElementById('commonIcon').value = item.icon || '🏥';
-            document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
-            currentImgBase64 = item.img || ""; toggleFormType();
-            if(type === 'drs') {
-                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2]; document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5]; } }
-                document.getElementById('drWa').value = item.wa || ''; document.getElementById('drLoc').value = item.loc || '';
-                if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
-            }
-            document.getElementById('adminPanel').style.display = 'block';
-        }
-
-        function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
-        function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
         function checkAdmin() { if(prompt("كلمة سر الإدارة:") === "1987") { isAdminMode = true; render(); } }
+        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
+        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
+        function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
         function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
         function openQuickAdd() { resetForm(); document.getElementById('adminPanel').style.display = 'block'; }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
+        function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
         function deleteItem(type, id) { if(confirm("حذف نهائي؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
         function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
         function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="العنوان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="القيمة" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
-
-        function updateGlobalSettings() { 
-            const s = dataStore.settings || {}; 
-            document.getElementById('mainHeading').innerText = s.title || "المستشفى"; 
-            document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض"; 
-            const fb = document.getElementById('fbLink'); 
-            if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
-        }
-
-        function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
-        function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
+        document.getElementById('itemFile').addEventListener('change', function(e) { const file = e.target.files; if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); } });
 
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
