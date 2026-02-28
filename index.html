@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title id="pageTitle">استعلامات مستشفي القصر العيني الفرنساوي</title>
+    <title>استعلامات مستشفي القصر العيني الفرنساوي</title>
     <meta property="og:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
     <meta property="og:site_name" content="استعلامات مستشفي القصر العيني الفرنساوي">
-    <meta name="twitter:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -177,16 +176,12 @@
 
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if(c.parentId === parentID) {
-                        createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img);
-                    }
+                    if(c.parentId === parentID) { createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if(d.parentId === parentID) {
-                        createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
-                    }
+                    if(d.parentId === parentID) { createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); }
                 });
             }
         }
@@ -206,10 +201,8 @@
             const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             const name = document.getElementById('itemName').value;
             if(!name) return;
-
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
-
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
                 data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
@@ -220,7 +213,6 @@
                 });
                 data.fields = flds;
             }
-
             if(id) {
                 if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
                 db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
