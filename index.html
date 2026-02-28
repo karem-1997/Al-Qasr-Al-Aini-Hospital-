@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">نظام القصر الفرنسي - العزل الرقمي النهائي</title>
+    <title id="pageTitle">تحميل...</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -22,7 +22,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card { background: white; padding: 15px 10px; border-radius: 20px; text-align: center; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; min-height: 110px; position: relative; }
         .card:active { transform: translateY(2px); box-shadow: none; }
-        .card .icon-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
+        .card .icon-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; display: block; }
         .card .icon-emoji { font-size: 38px; margin-bottom: 6px; }
         .card .name { font-weight: bold; color: #0369a1; font-size: 13px; line-height: 1.2; }
 
@@ -160,7 +160,11 @@
 
         document.getElementById('itemFile').addEventListener('change', function(e) {
             const file = e.target.files;
-            if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
+            if(file) { 
+                const rd = new FileReader(); 
+                rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; 
+                rd.readAsDataURL(file); 
+            }
         });
 
         function render() {
@@ -189,7 +193,8 @@
 
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
-            let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
+            // التحقق من وجود صورة لعرضها، وإلا عرض الإيموجي
+            let content = (imgUrl && imgUrl !== "") ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon || '🏥'}</div>`;
             let controls = isAdminMode ? `<div class="admin-controls" style="display:flex;"><span class="btn-edit" onclick="event.stopPropagation(); startEdit('${type}', '${id}')">✏️</span><span class="btn-del" onclick="event.stopPropagation(); deleteItem('${type}', '${id}')">❌</span></div>` : '';
             d.innerHTML = `${controls}${content}<div class="name">${name}</div>`;
             d.onclick = clickFn;
@@ -256,7 +261,7 @@
             const s = dataStore.settings || {}; 
             const titleToSet = s.title || "المستشفى";
             document.getElementById('mainHeading').innerText = titleToSet; 
-            document.title = titleToSet; // هذا السطر يربط اسم الموقع اللي بتكتبه بعنوان الصفحة فوق
+            document.title = titleToSet; 
             document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض"; 
             const fb = document.getElementById('fbLink'); 
             if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
@@ -266,8 +271,16 @@
         function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
 
         function showDr(dr) {
-            document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
-            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
+            document.getElementById('mTitle').innerText = dr.name; 
+            const mImg = document.getElementById('modalImg'); 
+            const mEmoji = document.getElementById('modalEmojiHeader');
+            
+            if(dr.img && dr.img !== "") { 
+                mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; 
+            } else { 
+                mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; 
+            }
+            
             let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
             if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br>${f.value}</div>`);
             document.getElementById('mInfo').innerHTML = infoHtml; 
