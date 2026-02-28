@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>استعلامات مستشفى القصر العيني الفرنساوي</title>
-    <meta property="og:title" content="استعلامات مستشفى القصر العيني الفرنساوي">
+    <title id="pageTitle">نظام القصر الفرنسي - العزل الرقمي النهائي</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -149,6 +148,7 @@
         const DATA_PATH = 'hospital_extreme_isolation_v1';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
+        // مصفوفة لتخزين الـ IDs الفريدة للمسار الحالي
         let currentPathNodes = [{ id: 'root', name: 'الرئيسية' }]; 
         let isAdminMode = false;
         let currentImgBase64 = "";
@@ -160,7 +160,7 @@
         });
 
         document.getElementById('itemFile').addEventListener('change', function(e) {
-            const file = e.target.files;
+            const file = e.target.files[0];
             if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
         });
 
@@ -168,10 +168,13 @@
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             grid.innerHTML = '';
+            
+            // تحديث شريط المسار والأسماء
             document.getElementById('pathDisplay').innerText = currentPathNodes.map(n => n.name).join(' > ');
             document.getElementById('backBtn').style.display = currentPathNodes.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
+            // العزل المطلق: البحث بالـ ParentID الرقمي الفريد حصراً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
                     if(c.parentId === parentID) {
@@ -236,7 +239,7 @@
             document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
             currentImgBase64 = item.img || ""; toggleFormType();
             if(type === 'drs') {
-                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts; document.getElementById('pFrom').value = pts; document.getElementById('tTo').value = pts; document.getElementById('pTo').value = pts; } }
+                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts[1]; document.getElementById('pFrom').value = pts[2]; document.getElementById('tTo').value = pts[4]; document.getElementById('pTo').value = pts[5]; } }
                 document.getElementById('drWa').value = item.wa || ''; document.getElementById('drLoc').value = item.loc || '';
                 if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
             }
