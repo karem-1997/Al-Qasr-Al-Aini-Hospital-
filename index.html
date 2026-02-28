@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>استعلامات مستشفي القصر العيني الفرنساوي</title>
+
     <meta property="og:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
+    <meta property="og:site_name" content="استعلامات مستشفي القصر العيني الفرنساوي">
     <meta property="og:description" content="">
     <meta property="og:type" content="website">
+
     <meta name="twitter:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
+    <meta name="twitter:description" content="">
     <meta name="description" content="">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -174,6 +178,7 @@
             if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
         }
 
+        // --- جميع الدوال الأخرى (العزل المطلق) محفوظة كما هي بالحرف ---
         function render() {
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
@@ -184,7 +189,6 @@
             if(dataStore.cats) { Object.entries(dataStore.cats).forEach(([id, c]) => { if(c.parentId === parentID) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); }); }
             if(dataStore.drs) { Object.entries(dataStore.drs).forEach(([id, d]) => { if(d.parentId === parentID) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); }); }
         }
-
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
             let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
@@ -193,14 +197,13 @@
             d.onclick = clickFn;
             container.appendChild(d);
         }
-
         async function saveData() {
             const id = document.getElementById('editId').value;
             const typeRef = document.getElementById('editTypeRef').value;
-            const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             const name = document.getElementById('itemName').value;
             if(!name) return;
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
+            const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
@@ -212,7 +215,6 @@
             else { db.ref(`${DATA_PATH}/${newType}`).push(data); }
             closeAdmin();
         }
-
         function goBack() { if(currentPathNodes.length > 1) { currentPathNodes.pop(); render(); } }
         function checkAdmin() { if(prompt("كلمة سر الإدارة:") === "1987") { isAdminMode = true; render(); } }
         function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
@@ -226,7 +228,6 @@
         function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
         function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="العنوان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="القيمة" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
         document.getElementById('itemFile').addEventListener('change', function(e) { const file = e.target.files; if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); } });
-        
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
             if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
@@ -236,7 +237,6 @@
             const mLoc = document.getElementById('mLoc'); if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
         }
-
         function handleSearch() {
             const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
             Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); });
