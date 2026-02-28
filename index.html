@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>استعلامات مستشفي القصر العيني الفرنساوي</title>
-    <meta property="og:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
-    <meta property="og:site_name" content="استعلامات مستشفي القصر العيني الفرنساوي">
+    <title id="pageTitle">استعلامات مستشفى القصر العيني الفرنساوي</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -151,6 +148,7 @@
         const DATA_PATH = 'hospital_extreme_isolation_v1';
 
         let dataStore = { cats: {}, drs: {}, settings: {} };
+        // مصفوفة لتخزين الـ IDs الفريدة للمسار الحالي
         let currentPathNodes = [{ id: 'root', name: 'الرئيسية' }]; 
         let isAdminMode = false;
         let currentImgBase64 = "";
@@ -170,18 +168,25 @@
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             grid.innerHTML = '';
+            
+            // تحديث شريط المسار والأسماء
             document.getElementById('pathDisplay').innerText = currentPathNodes.map(n => n.name).join(' > ');
             document.getElementById('backBtn').style.display = currentPathNodes.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
 
+            // العزل المطلق: البحث بالـ ParentID الرقمي الفريد حصراً
             if(dataStore.cats) {
                 Object.entries(dataStore.cats).forEach(([id, c]) => {
-                    if(c.parentId === parentID) { createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); }
+                    if(c.parentId === parentID) {
+                        createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img);
+                    }
                 });
             }
             if(dataStore.drs) {
                 Object.entries(dataStore.drs).forEach(([id, d]) => {
-                    if(d.parentId === parentID) { createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); }
+                    if(d.parentId === parentID) {
+                        createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img);
+                    }
                 });
             }
         }
@@ -201,8 +206,10 @@
             const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
             const name = document.getElementById('itemName').value;
             if(!name) return;
+
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
+
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
                 data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
@@ -213,6 +220,7 @@
                 });
                 data.fields = flds;
             }
+
             if(id) {
                 if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
                 db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
