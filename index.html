@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>استعلامات مستشفي القصر العيني الفرنساوي</title>
-
     <meta property="og:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
     <meta property="og:site_name" content="استعلامات مستشفي القصر العيني الفرنساوي">
     <meta property="og:description" content="">
     <meta property="og:type" content="website">
-
     <meta name="twitter:title" content="استعلامات مستشفي القصر العيني الفرنساوي">
-    <meta name="twitter:description" content="">
-    <meta name="description" content="">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -118,9 +114,23 @@
             <button type="button" style="color:red" onclick="clearImageInput()">حذف الصورة 🗑️</button>
         </div>
         <select id="commonIcon">
-            <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
-            <option value="🦷">🦷 أسنان</option><option value="👁️">👁️ رمد</option><option value="🦴">🦴 عظام</option>
-            <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🏢">🏢 مبنى</option>
+            <optgroup label="طبي">
+                <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
+                <option value="🦷">🦷 أسنان</option><option value="👁️">👁️ رمد</option><option value="🦴">🦴 عظام</option>
+                <option value="👶">👶 أطفال</option><option value="❤️">❤️ قلب</option><option value="🧠">🧠 أعصاب</option>
+                <option value="👂">👂 أنف وأذن</option><option value="💉">💉 تحاليل</option><option value="🧪">🧪 معمل</option>
+                <option value="🚑">🚑 إسعاف</option><option value="💊">💊 صيدلية</option>
+            </optgroup>
+            <optgroup label="أقسام ومباني">
+                <option value="🏢">🏢 مبنى</option><option value="🏬">🏬 إدارة</option><option value="🏠">🏠 عيادة</option>
+                <option value="📍">📍 موقع</option><option value="📞">📞 تواصل</option><option value="ℹ️">ℹ️ معلومات</option>
+            </optgroup>
+            <optgroup label="أيام الوقت">
+                <option value="📅">📅 يوم</option><option value="⏰">⏰ وقت</option><option value="☀️">☀️ صباحاً</option><option value="🌙">🌙 مساءً</option>
+            </optgroup>
+            <optgroup label="أخرى">
+                <option value="⭐">⭐ مفضل</option><option value="✅">✅ متاح</option><option value="🚫">🚫 مغلق</option>
+            </optgroup>
         </select>
         <div id="drOnly">
             <div class="time-grid">
@@ -178,7 +188,6 @@
             if(s.fb) { fb.href = s.fb; fb.style.display = 'flex'; } else { fb.style.display = 'none'; } 
         }
 
-        // --- جميع الدوال الأخرى (العزل المطلق) محفوظة كما هي بالحرف ---
         function render() {
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
@@ -189,6 +198,7 @@
             if(dataStore.cats) { Object.entries(dataStore.cats).forEach(([id, c]) => { if(c.parentId === parentID) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); }); }
             if(dataStore.drs) { Object.entries(dataStore.drs).forEach(([id, d]) => { if(d.parentId === parentID) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); }); }
         }
+
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
             let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
@@ -197,6 +207,33 @@
             d.onclick = clickFn;
             container.appendChild(d);
         }
+
+        // --- إصلاح دالة التعديل (هنا كانت المشكلة) ---
+        function startEdit(type, id) {
+            const item = dataStore[type][id];
+            document.getElementById('editId').value = id;
+            document.getElementById('editTypeRef').value = type;
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('commonIcon').value = item.icon || "🏥";
+            document.getElementById('itemType').value = (type === 'cats' ? 'cat' : 'dr');
+            currentImgBase64 = item.img || "";
+            
+            toggleFormType();
+            if(type === 'drs') {
+                const timeParts = item.time ? item.time.split(' ') : [];
+                document.getElementById('tFrom').value = timeParts || "";
+                document.getElementById('pFrom').value = timeParts || "صباحاً";
+                document.getElementById('tTo').value = timeParts || "";
+                document.getElementById('pTo').value = timeParts || "مساءً";
+                document.getElementById('drWa').value = item.wa || "";
+                document.getElementById('drLoc').value = item.loc || "";
+                document.getElementById('dynamicFields').innerHTML = "";
+                if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
+            }
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('panelTitle').innerText = "تعديل العنصر";
+        }
+
         async function saveData() {
             const id = document.getElementById('editId').value;
             const typeRef = document.getElementById('editTypeRef').value;
@@ -204,22 +241,41 @@
             if(!name) return;
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             const newType = document.getElementById('itemType').value === 'cat' ? 'cats' : 'drs';
-            let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
+            
+            let data = { 
+                name, 
+                parentId: (id && typeRef) ? dataStore[typeRef][id].parentId : parentID, 
+                icon: document.getElementById('commonIcon').value, 
+                img: currentImgBase64 
+            };
+
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
-                const flds = []; document.querySelectorAll('.f-row').forEach(row => { const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value; if(l && v) flds.push({ label: l, value: v }); });
+                data.wa = document.getElementById('drWa').value;
+                data.loc = document.getElementById('drLoc').value;
+                const flds = [];
+                document.querySelectorAll('.f-row').forEach(row => {
+                    const l = row.querySelector('.f-l').value;
+                    const v = row.querySelector('.f-v').value;
+                    if(l && v) flds.push({ label: l, value: v });
+                });
                 data.fields = flds;
             }
-            if(id) { if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove(); db.ref(`${DATA_PATH}/${newType}/${id}`).update(data); }
-            else { db.ref(`${DATA_PATH}/${newType}`).push(data); }
+
+            if(id) {
+                if(typeRef && typeRef !== newType) db.ref(`${DATA_PATH}/${typeRef}/${id}`).remove();
+                db.ref(`${DATA_PATH}/${newType}/${id}`).update(data);
+            } else {
+                db.ref(`${DATA_PATH}/${newType}`).push(data);
+            }
             closeAdmin();
         }
+
         function goBack() { if(currentPathNodes.length > 1) { currentPathNodes.pop(); render(); } }
         function checkAdmin() { if(prompt("كلمة سر الإدارة:") === "1987") { isAdminMode = true; render(); } }
         function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
         function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; resetForm(); document.getElementById('panelTitle').innerText = "إضافة عنصر جديد"; }
         function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
         function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
         function openQuickAdd() { resetForm(); document.getElementById('adminPanel').style.display = 'block'; }
@@ -227,7 +283,16 @@
         function deleteItem(type, id) { if(confirm("حذف نهائي؟")) db.ref(`${DATA_PATH}/${type}/${id}`).remove(); }
         function closeDrModal() { document.getElementById('modal').style.display = 'none'; }
         function addField(l = '', v = '') { const div = document.createElement('div'); div.className = 'f-row'; div.innerHTML = `<input type="text" placeholder="العنوان" class="f-l" value="${l}" style="width:40%"> <input type="text" placeholder="القيمة" class="f-v" value="${v}" style="width:50%"> <button onclick="this.parentElement.remove()" style="color:red; background:none; border:none;">✕</button>`; document.getElementById('dynamicFields').appendChild(div); }
-        document.getElementById('itemFile').addEventListener('change', function(e) { const file = e.target.files; if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); } });
+        
+        document.getElementById('itemFile').addEventListener('change', function(e) { 
+            const file = e.target.files; 
+            if(file) { 
+                const rd = new FileReader(); 
+                rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; 
+                rd.readAsDataURL(file); 
+            } 
+        });
+
         function showDr(dr) {
             document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
             if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
@@ -237,6 +302,7 @@
             const mLoc = document.getElementById('mLoc'); if(dr.loc) { mLoc.href = dr.loc; mLoc.style.display = 'block'; } else { mLoc.style.display = 'none'; }
             document.getElementById('modal').style.display = 'flex';
         }
+
         function handleSearch() {
             const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
             Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); });
