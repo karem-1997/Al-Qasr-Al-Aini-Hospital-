@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">استعلامات مستشفى القصر العيني الفرنساوي</title>
     
+    <title>استعلامات مستشفى القصر العيني الفرنساوي</title>
+    <meta property="og:title" content="استعلامات مستشفى القصر العيني الفرنساوي">
+    <meta name="twitter:title" content="استعلامات مستشفى القصر العيني الفرنساوي">
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -22,10 +25,8 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card { background: white; padding: 15px 10px; border-radius: 20px; text-align: center; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; min-height: 110px; position: relative; }
         .card:active { transform: translateY(2px); box-shadow: none; }
-        
-        /* ضبط شكل الصورة في الكارت */
-        .card .icon-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 2px solid #eee; display: block; }
-        .card .icon-emoji { font-size: 38px; margin-bottom: 6px; display: block; }
+        .card .icon-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; border: 1px solid #eee; }
+        .card .icon-emoji { font-size: 38px; margin-bottom: 6px; }
         .card .name { font-weight: bold; color: #0369a1; font-size: 13px; line-height: 1.2; }
 
         .admin-controls { display: none; position: absolute; top: 5px; left: 5px; right: 5px; justify-content: space-between; pointer-events: none; z-index: 5; }
@@ -106,9 +107,8 @@
         </select>
         <input type="text" id="itemName" placeholder="الاسم">
         <div class="img-container">
-            <label>ارفع صورة (اختياري):</label>
             <input type="file" id="itemFile" accept="image/*">
-            <button type="button" style="color:red" onclick="clearImageInput()">حذف الصورة المختارة 🗑️</button>
+            <button type="button" style="color:red" onclick="clearImageInput()">حذف الصورة 🗑️</button>
         </div>
         <select id="commonIcon">
             <option value="🏥">🏥 مستشفى</option><option value="👨‍⚕️">👨‍⚕️ دكتور</option><option value="👩‍⚕️">👩‍⚕️ دكتورة</option>
@@ -163,18 +163,13 @@
 
         document.getElementById('itemFile').addEventListener('change', function(e) {
             const file = e.target.files;
-            if(file) { 
-                const rd = new FileReader(); 
-                rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; 
-                rd.readAsDataURL(file); 
-            }
+            if(file) { const rd = new FileReader(); rd.onload = (ev) => { currentImgBase64 = ev.target.result; }; rd.readAsDataURL(file); }
         });
 
         function render() {
             const grid = document.getElementById('mainGrid');
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
             grid.innerHTML = '';
-            
             document.getElementById('pathDisplay').innerText = currentPathNodes.map(n => n.name).join(' > ');
             document.getElementById('backBtn').style.display = currentPathNodes.length > 1 ? 'block' : 'none';
             document.getElementById('quickAddBtn').style.display = isAdminMode ? 'block' : 'none';
@@ -195,12 +190,11 @@
             }
         }
 
-        // إصلاح منطق عرض الصورة في الكارت: إذا وجدت img تعرضها، وإلا تعرض الـ icon
         function createCard(container, id, icon, name, clickFn, type, imgUrl) {
             const d = document.createElement('div'); d.className = 'card';
-            let visual = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon || '🏥'}</div>`;
+            let content = imgUrl ? `<img src="${imgUrl}" class="icon-img">` : `<div class="icon-emoji">${icon}</div>`;
             let controls = isAdminMode ? `<div class="admin-controls" style="display:flex;"><span class="btn-edit" onclick="event.stopPropagation(); startEdit('${type}', '${id}')">✏️</span><span class="btn-del" onclick="event.stopPropagation(); deleteItem('${type}', '${id}')">❌</span></div>` : '';
-            d.innerHTML = `${controls}${visual}<div class="name">${name}</div>`;
+            d.innerHTML = `${controls}${content}<div class="name">${name}</div>`;
             d.onclick = clickFn;
             container.appendChild(d);
         }
@@ -213,27 +207,14 @@
             if(!name) return;
 
             const parentID = currentPathNodes[currentPathNodes.length - 1].id;
-            // الحفاظ على الصورة القديمة لو مرفعناش صورة جديدة أثناء التعديل
-            let finalImg = currentImgBase64;
-            if(!finalImg && id && typeRef) {
-                finalImg = dataStore[typeRef][id].img || "";
-            }
-
-            let data = { 
-                name, 
-                parentId: parentID, 
-                icon: document.getElementById('commonIcon').value, 
-                img: finalImg 
-            };
+            let data = { name, parentId: parentID, icon: document.getElementById('commonIcon').value, img: currentImgBase64 };
 
             if(newType === 'drs') {
                 data.time = `من ${document.getElementById('tFrom').value} ${document.getElementById('pFrom').value} إلى ${document.getElementById('tTo').value} ${document.getElementById('pTo').value}`;
-                data.wa = document.getElementById('drWa').value; 
-                data.loc = document.getElementById('drLoc').value;
+                data.wa = document.getElementById('drWa').value; data.loc = document.getElementById('drLoc').value;
                 const flds = [];
                 document.querySelectorAll('.f-row').forEach(row => {
-                    const l = row.querySelector('.f-l').value; 
-                    const v = row.querySelector('.f-v').value;
+                    const l = row.querySelector('.f-l').value; const v = row.querySelector('.f-v').value;
                     if(l && v) flds.push({ label: l, value: v });
                 });
                 data.fields = flds;
@@ -251,45 +232,20 @@
         function goBack() { if(currentPathNodes.length > 1) { currentPathNodes.pop(); render(); } }
 
         function startEdit(type, id) {
-            resetForm(); 
-            const item = dataStore[type][id];
-            document.getElementById('editId').value = id; 
-            document.getElementById('editTypeRef').value = type;
-            document.getElementById('itemName').value = item.name; 
-            document.getElementById('commonIcon').value = item.icon || '🏥';
+            resetForm(); const item = dataStore[type][id];
+            document.getElementById('editId').value = id; document.getElementById('editTypeRef').value = type;
+            document.getElementById('itemName').value = item.name; document.getElementById('commonIcon').value = item.icon || '🏥';
             document.getElementById('itemType').value = (type === 'cats') ? 'cat' : 'dr';
-            currentImgBase64 = item.img || ""; 
-            toggleFormType();
+            currentImgBase64 = item.img || ""; toggleFormType();
             if(type === 'drs') {
-                if(item.time) { 
-                    const pts = item.time.split(' '); 
-                    if(pts.length >= 6) { 
-                        document.getElementById('tFrom').value = pts; 
-                        document.getElementById('pFrom').value = pts; 
-                        document.getElementById('tTo').value = pts; 
-                        document.getElementById('pTo').value = pts; 
-                    } 
-                }
-                document.getElementById('drWa').value = item.wa || ''; 
-                document.getElementById('drLoc').value = item.loc || '';
+                if(item.time) { const pts = item.time.split(' '); if(pts.length >= 6) { document.getElementById('tFrom').value = pts; document.getElementById('pFrom').value = pts; document.getElementById('tTo').value = pts; document.getElementById('pTo').value = pts; } }
+                document.getElementById('drWa').value = item.wa || ''; document.getElementById('drLoc').value = item.loc || '';
                 if(item.fields) item.fields.forEach(f => addField(f.label, f.value));
             }
             document.getElementById('adminPanel').style.display = 'block';
         }
 
-        function resetForm() { 
-            document.getElementById('editId').value = ""; 
-            document.getElementById('editTypeRef').value = ""; 
-            document.getElementById('itemName').value = ""; 
-            document.getElementById('itemFile').value = ""; 
-            currentImgBase64 = ""; 
-            document.getElementById('tFrom').value = ""; 
-            document.getElementById('tTo').value = ""; 
-            document.getElementById('drWa').value = ""; 
-            document.getElementById('drLoc').value = ""; 
-            document.getElementById('dynamicFields').innerHTML = ""; 
-        }
-
+        function resetForm() { document.getElementById('editId').value = ""; document.getElementById('editTypeRef').value = ""; document.getElementById('itemName').value = ""; document.getElementById('itemFile').value = ""; currentImgBase64 = ""; document.getElementById('tFrom').value = ""; document.getElementById('tTo').value = ""; document.getElementById('drWa').value = ""; document.getElementById('drLoc').value = ""; document.getElementById('dynamicFields').innerHTML = ""; }
         function clearImageInput() { document.getElementById('itemFile').value = ""; currentImgBase64 = ""; }
         function checkAdmin() { if(prompt("كلمة سر الإدارة:") === "1987") { isAdminMode = true; render(); } }
         function toggleFormType() { document.getElementById('drOnly').style.display = document.getElementById('itemType').value === 'dr' ? 'block' : 'none'; }
@@ -310,22 +266,9 @@
         function toggleSettings() { const f = document.getElementById('settingsFields'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
         function saveSettings() { const s = { title: document.getElementById('setMainTitle').value, dua: document.getElementById('setDua').value, fb: document.getElementById('setFb').value }; db.ref(`${DATA_PATH}/settings`).set(s).then(() => { alert("تم الحفظ!"); toggleSettings(); }); }
 
-        // إصلاح عرض الصورة في المودال (النافذة المنبثقة)
         function showDr(dr) {
-            document.getElementById('mTitle').innerText = dr.name; 
-            const mImg = document.getElementById('modalImg'); 
-            const mEmoji = document.getElementById('modalEmojiHeader');
-            
-            if(dr.img) { 
-                mImg.src = dr.img; 
-                mImg.style.display = 'block'; 
-                mEmoji.style.display = 'none'; 
-            } else { 
-                mEmoji.innerText = dr.icon || '👨‍⚕️'; 
-                mEmoji.style.display = 'block'; 
-                mImg.style.display = 'none'; 
-            }
-            
+            document.getElementById('mTitle').innerText = dr.name; const mImg = document.getElementById('modalImg'); const mEmoji = document.getElementById('modalEmojiHeader');
+            if(dr.img) { mImg.src = dr.img; mImg.style.display = 'block'; mEmoji.style.display = 'none'; } else { mEmoji.innerText = dr.icon || '👨‍⚕️'; mEmoji.style.display = 'block'; mImg.style.display = 'none'; }
             let infoHtml = `<div class="info-card"><b>🕒 المواعيد:</b><br>${dr.time}</div>`;
             if(dr.fields) dr.fields.forEach(f => infoHtml += `<div class="info-card"><b>${f.label}:</b><br>${f.value}</div>`);
             document.getElementById('mInfo').innerHTML = infoHtml; 
@@ -336,16 +279,9 @@
         }
 
         function handleSearch() {
-            const q = document.getElementById('searchInput').value.toLowerCase(); 
-            const grid = document.getElementById('mainGrid'); 
-            if(!q) { render(); return; } 
-            grid.innerHTML = '';
-            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { 
-                if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); 
-            });
-            Object.entries(dataStore.drs||{}).forEach(([id, d]) => { 
-                if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); 
-            });
+            const q = document.getElementById('searchInput').value.toLowerCase(); const grid = document.getElementById('mainGrid'); if(!q) { render(); return; } grid.innerHTML = '';
+            Object.entries(dataStore.cats||{}).forEach(([id, c]) => { if(c.name.toLowerCase().includes(q)) createCard(grid, id, c.icon, c.name, () => { currentPathNodes.push({id: id, name: c.name}); render(); }, 'cats', c.img); });
+            Object.entries(dataStore.drs||{}).forEach(([id, d]) => { if(d.name.toLowerCase().includes(q)) createCard(grid, id, d.icon, d.name, () => showDr(d), 'drs', d.img); });
         }
     </script>
 </body>
